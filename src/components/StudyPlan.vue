@@ -1,5 +1,5 @@
 <template>
-    <span>โครงสร้างหลักสูตร</span>
+    <span>วางแผนการเรียน</span>
     <div class="card">
         <DataTable :value="products" tableStyle="min-width: 50rem">
             <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" />
@@ -8,8 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
 import { ProductService } from '@/service/ProductService';
+import { onMounted, ref } from 'vue';
 
 // สร้าง products แบบ array
 const products = ref<any[]>([]);

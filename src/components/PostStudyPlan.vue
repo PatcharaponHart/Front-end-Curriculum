@@ -1,5 +1,5 @@
 <template>
-    <span>โครงสร้างหลักสูตร</span>
+    <span>ลงแผนการเรียน</span>
     <div class="card">
         <DataTable :value="products" tableStyle="min-width: 50rem">
             <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" />

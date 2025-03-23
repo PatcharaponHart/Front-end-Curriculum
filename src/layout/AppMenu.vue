@@ -8,10 +8,10 @@ const model = ref([
         label: 'Home',
         items: [
             { label: 'ข้อมูลนิสิต', icon: 'pi pi-fw pi-home', to: '/' },
-            { label: 'testโครงสร้างหลักสูตร', icon: 'pi pi-fw pi-check-square', to: '/components/coursestructures' },
-            { label: 'โครงสร้างหลักสูตร', icon: 'pi pi-fw pi-check-square', to: '/uikit/input' },
-            { label: 'รายวิชาที่เปิด', icon: 'pi pi-fw pi-mobile', to: '/uikit/button', class: 'rotated-icon' },
-            { label: 'ลงผลการเรียน', icon: 'pi pi-fw pi-table', to: '/uikit/table' }
+            { label: 'โครงสร้างหลักสูตร', icon: 'pi pi-fw pi-check-square', to: '/components/coursestructures' },
+            { label: 'วิชาทั้งหมดของสาขา', icon: 'pi pi-fw pi-check-square', to: '/components/allsubjects' },
+            { label: 'ลงแผนการเรียน', icon: 'pi pi-fw pi-mobile', to: '/components/poststudyplan', class: 'rotated-icon' },
+            { label: 'วางแผนการเรียน', icon: 'pi pi-fw pi-table', to: '/components/studyplan' }
         ]
     }
     // {
