@@ -7,11 +7,11 @@ const model = ref([
     {
         label: 'Home',
         items: [
-            { label: 'ข้อมูลนิสิต', icon: 'pi pi-fw pi-home', to: '/' },
-            { label: 'โครงสร้างหลักสูตร', icon: 'pi pi-fw pi-check-square', to: '/components/coursestructures' },
-            { label: 'วิชาทั้งหมดของสาขา', icon: 'pi pi-fw pi-check-square', to: '/components/allsubjects' },
-            { label: 'ลงแผนการเรียน', icon: 'pi pi-fw pi-mobile', to: '/components/poststudyplan', class: 'rotated-icon' },
-            { label: 'วางแผนการเรียน', icon: 'pi pi-fw pi-table', to: '/components/studyplan' }
+            { label: 'ข้อมูลนิสิต', icon: 'pi pi-address-book', to: '/dashboard' },
+            { label: 'โครงสร้างหลักสูตร', icon: 'pi pi-book', to: '/components/coursestructures' },
+            { label: 'วิชาทั้งหมดของสาขา', icon: 'pi pi-clipboard', to: '/components/allsubjects' },
+            { label: 'บันทีกผลการเรียน', icon: 'pi pi-pen-to-square', to: '/components/poststudyplan', class: 'rotated-icon' },
+            { label: 'วางแผนการเรียน', icon: 'pi pi-file-check', to: '/components/studyplan' }
         ]
     }
     // {
