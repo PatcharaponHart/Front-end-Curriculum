@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 
 import Aura from '@primevue/themes/aura';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import PrimeVue from 'primevue/config';
 import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
