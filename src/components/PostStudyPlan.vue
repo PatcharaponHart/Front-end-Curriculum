@@ -383,7 +383,7 @@ const yr4Sem2 = ref<any[]>([
     }
 ]);
 
-const gradeOptions = ref(['A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']); // รายการเกรดที่เป็นไปได้
+const gradeOptions = ref(['A', 'B+', 'B', 'C+', 'C', 'D+', 'D']); // รายการเกรดที่เป็นไปได้
 
 // columns ยังคงเดิม
 const columns = [
