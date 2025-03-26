@@ -1,5 +1,5 @@
 <template>
-    <span class="page-title">โครงสร้างหลักสูตร</span>
+    <span class="text-primary" style="font-size: 1.6em">โครงสร้างหลักสูตร</span>
 
     <div class="card narrow-card">
         <p><strong class="me-2">1. หมวดวิชาศึกษาทั่วไป</strong> <span>ไม่น้อยกว่า 30 หน่วยกิต</span></p>
@@ -56,7 +56,7 @@
         <p><strong class="me-2">3.หมวดวิชาเลือกเสรี </strong> <span>ไม่น้อยกว่า 6 หน่วยกิต</span></p>
     </div>
 
-    <span class="page-title">รายวิชา</span>
+    <span class="text-primary" style="font-size: 1.6em">รายวิชา</span>
 
     <div class="card narrow-card">
         <p><strong class="me-2">1.หมวดวิชาศึกษาทั่วไป</strong> <span>ไม่น้อยกว่า 30 หน่วยกิต</span></p>
