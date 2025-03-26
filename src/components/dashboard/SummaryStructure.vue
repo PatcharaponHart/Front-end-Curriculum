@@ -50,10 +50,10 @@ const totalCredits = calculateTotalCredits();
       
       <div class="border border-gray-300 rounded-md mt-2">
         <div class="grid grid-cols-4 bg-gray-100 font-bold p-2 text-sm">
-          <span>หมวดวิชา</span>
-          <span class="text-center">หน่วยกิตที่ได้</span>
-          <span class="text-center">หน่วยกิตที่ต้องการ</span>
-          <span class="text-center">ครบ / ไม่ครบ</span>
+          <span class="text-center text-primary">หมวดวิชา</span>
+          <span class="text-center text-primary">หน่วยกิตที่ได้</span>
+          <span class="text-center text-primary">หน่วยกิตที่ต้องการ</span>
+          <span class="text-center text-primary">ครบ / ไม่ครบ</span>
         </div>
         
         <div 

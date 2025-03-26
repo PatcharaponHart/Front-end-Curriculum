@@ -1,6 +1,12 @@
 <template>
     <span>วิชาทั้งหมดของสาขา</span>
     <div class="card">
+        <!-- ช่องค้นหาวิชา -->
+        <div class="search-container">
+            <InputText v-model="searchTerm" placeholder="ค้นหาชื่อวิชา, กลุ่มวิชา" />
+        </div>
+
+        <!-- ตารางแสดงวิชา -->
         <DataTable :value="filteredCourses" tableStyle="min-width: 50rem">
             <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" />
         </DataTable>
@@ -11,15 +17,17 @@
 import { ref, onMounted, computed } from 'vue';
 import courseService, { Course } from '@/service/courseService';
 
-// สร้าง courses แบบ array
 const courses = ref<Course[]>([]);
+const searchTerm = ref('');
+const filteredCourses = computed(() => {
+    return courses.value.filter((course: Course) => 
+        course.courseCode.startsWith('01418') && 
+        (course.courseNameTH.toLowerCase().includes(searchTerm.value.toLowerCase()) || 
+        course.courseNameEN.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+        course.subjectGroup.toLowerCase().includes(searchTerm.value.toLowerCase()))
+    );
+});
 
-// สร้าง computed property สำหรับกรองวิชา - เพิ่มการระบุ type ให้ course
-const filteredCourses = computed(() => 
-    courses.value.filter((course: Course) => course.courseCode.startsWith('01418'))
-);
-
-// สร้าง columns พร้อม type
 const columns = [
     { field: 'courseCode', header: 'รหัสวิชา' },
     { field: 'courseNameTH', header: 'ชื่อวิชา (ไทย)' },
@@ -28,7 +36,6 @@ const columns = [
     { field: 'subjectGroup', header: 'กลุ่มวิชา' }
 ];
 
-// โหลดข้อมูลเมื่อ component mount
 onMounted(async () => {
     try {
         const coursesList = await courseService.getCoursesList();
@@ -44,5 +51,11 @@ onMounted(async () => {
 <style scoped>
 .card {
     padding: 1rem;
+}
+
+.search-container {
+    margin-bottom: 1rem;
+    max-width: 300px;
+    margin-left: 900px; /* เลื่อนไปทางขวา */
 }
 </style>

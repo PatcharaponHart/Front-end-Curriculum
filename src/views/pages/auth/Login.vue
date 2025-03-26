@@ -1,45 +1,43 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div class="bg-white p-10 rounded-xl shadow-xl w-full max-w-md">
       <!-- โลโก้ -->
-      <div class="text-center mb-6">
-        <img src="@/assets/logo.png" alt="Logo" class="mx-auto w-24" />
-        <h1 class="text-2xl font-bold mt-4">เข้าสู่ระบบ</h1>
+      <div class="text-center mb-8">
+        <img src="@/assets/logo.png" alt="Logo" class="mx-auto w-32" /> <!-- ปรับขนาดโลโก้ -->
+        <h1 class="text-3xl font-semibold mt-4 text-gray-800">เข้าสู่ระบบ</h1> <!-- เพิ่มขนาดตัวหนังสือ -->
       </div>
 
-      <!-- Email -->
-      <div class="mb-4">
-        <label for="username" class="block text-gray-700">ชื่อผู้ใช้</label>
+      <!-- ชื่อผู้ใช้ -->
+      <div class="mb-6">
+        <label for="username" class="block text-base font-medium text-gray-700">ชื่อผู้ใช้</label> <!-- เพิ่มขนาดตัวหนังสือ -->
         <input
           v-model="username"
           id="username"
           type="text"
           placeholder="กรอกชื่อผู้ใช้"
-          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+          class="w-full px-4 py-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg" /> <!-- ปรับขนาดตัวหนังสือใน input -->
       </div>
 
-      <!-- Password -->
-      <div class="mb-4">
-        <label for="password" class="block text-gray-700">รหัสผ่าน</label>
+      <!-- รหัสผ่าน -->
+      <div class="mb-6">
+        <label for="password" class="block text-base font-medium text-gray-700">รหัสผ่าน</label> <!-- เพิ่มขนาดตัวหนังสือ -->
         <input
           v-model="password"
           id="password"
           type="password"
           placeholder="กรอกรหัสผ่าน"
-          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+          class="w-full px-4 py-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg" /> <!-- ปรับขนาดตัวหนังสือใน input -->
       </div>
 
-      <!-- Remember me -->
-      <div class="flex items-center mb-4">
+      <!-- จดจำฉัน -->
+      <div class="flex items-center mb-6">
         <input v-model="checked" type="checkbox" id="remember" class="mr-2" />
-        <label for="remember" class="text-gray-700">จดจำฉัน</label>
+        <label for="remember" class="text-base text-gray-700">จดจำฉัน</label> <!-- เพิ่มขนาดตัวหนังสือ -->
       </div>
 
       <!-- ปุ่ม Login -->
       <button
-        class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition disabled:opacity-50"
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition-all focus:outline-none disabled:opacity-50 text-lg"
         :disabled="loading"
         @click="onLogin"
       >
@@ -54,12 +52,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';  // เพิ่มการนำเข้า useRouter
+import { useRouter } from 'vue-router';  
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
 import { login } from '@/service/authService'; // service login mock
 
-const router = useRouter();  // ใช้ useRouter เพื่อทำการนำทาง
+const router = useRouter();  
 const username = ref('');
 const password = ref('');
 const checked = ref(false);
@@ -92,5 +90,49 @@ const onLogin = async () => {
 <style scoped>
 body {
   background-color: #f3f4f6;
+  font-family: 'Inter', sans-serif;
+}
+
+input,
+button {
+  font-size: 16px;
+}
+
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+input,
+button {
+  transition: all 0.3s ease;
+}
+
+.bg-white {
+  background-color: #ffffff;
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.bg-blue-600 {
+  background-color: #2563eb;
+}
+
+.text-lg {
+  font-size: 1.125rem; /* ขนาดตัวอักษรใน input และปุ่ม */
+}
+
+.w-32 {
+  width: 10rem; /* ขนาดของโลโก้ */
 }
 </style>

@@ -21,16 +21,43 @@ const clearAuthData = () => {
   Object.values(storageKey).forEach((key) => localStorage.removeItem(key));
 };
 
+// ✅ ฟังก์ชันตรวจสอบว่า token หมดอายุหรือไม่
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1])); // Decode JWT payload
+    const expirationTime = payload.exp * 1000; // แปลงเป็น milliseconds
+    return expirationTime < Date.now(); // เช็คว่าหมดอายุหรือไม่
+  } catch (error) {
+    return true; // ถ้า decode ไม่ได้ ถือว่าหมดอายุ
+  }
+};
+
 // ✅ Interceptor เพื่อแนบ token ทุก request
 axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(storageKey.TOKEN);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      if (isTokenExpired(token)) {
+        logout(); // ถ้าหมดอายุให้ออกจากระบบ
+        return Promise.reject(new Error('Token expired'));
+      } else {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// ✅ Interceptor ตรวจสอบ response ถ้า token หมดอายุ
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      logout(); // ถ้า 401 (Unauthorized) ให้ออกจากระบบ
+    }
+    return Promise.reject(error);
+  }
 );
 
 // ✅ ฟังก์ชัน Login
@@ -59,7 +86,10 @@ export const login = async (username: string, password: string): Promise<boolean
 };
 
 // ✅ ตรวจสอบว่า Login อยู่หรือไม่
-export const isLoggedIn = (): boolean => !!localStorage.getItem(storageKey.TOKEN);
+export const isLoggedIn = (): boolean => {
+  const token = localStorage.getItem(storageKey.TOKEN);
+  return token ? !isTokenExpired(token) : false;
+};
 
 // ✅ ออกจากระบบ และ redirect
 export const logout = (): void => {
