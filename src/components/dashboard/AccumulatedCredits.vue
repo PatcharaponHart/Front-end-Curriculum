@@ -1,17 +1,71 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import gradeService, { StudentGradesSummaryDto } from '@/service/gradeService';
+import { getCurrentUser } from '@/service/authService';
+
+const studentCredits = ref<StudentGradesSummaryDto | null>(null);
+const isLoading = ref(true);
+const errorMessage = ref<string | null>(null);
+
+const fetchStudentCredits = async () => {
+    try {
+        const currentUser = getCurrentUser();
+        if (currentUser.studentID) {
+            studentCredits.value = await gradeService.getStudentGradesByStudentId(currentUser.studentID);
+        } else {
+            throw new Error('ไม่พบรหัสนักศึกษา');
+        }
+    } catch (error) {
+        console.error(error);
+        errorMessage.value = 'เกิดข้อผิดพลาดในการโหลดข้อมูลหน่วยกิต';
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+onMounted(fetchStudentCredits);
+</script>
+
 <template>
-    <div class="col-span-12 lg:col-span-6 xl:col-span-3">
-        <div class="card mb-0">
-            <div class="flex justify-between mb-4">
-                <div>
-                    <span class="block text-muted-color font-medium mb-4">หน่วยกิตสะสม</span>
-                    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">152</div>
-                </div>
-                <div class="flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                    <i class>Credits</i>
-                </div>
-            </div>
-            <span class="text-primary font-medium">24 new </span>
-            <span class="text-muted-color">since last visit</span>
+    <div class="card">
+        <h2 class="text-primary">หน่วยกิตสะสม</h2>
+
+        <div v-if="isLoading" class="loading">กำลังโหลดข้อมูล...</div>
+        <div v-else-if="errorMessage" class="error">{{ errorMessage }}</div>
+        <div v-else-if="studentCredits" class="credits-info">
+            <p><strong class="text-primary">หน่วยกิตรวม:</strong> {{ studentCredits.totalCredits }}/124</p>
+            <p><strong class="text-primary">จำนวนวิชาทั้งหมด:</strong> {{ studentCredits.grades.length }}</p>
         </div>
     </div>
 </template>
+
+<style scoped>
+.h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.credits-info p {
+    margin: 10px 0;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.loading {
+    color: #3498db;
+    text-align: center;
+    padding: 20px;
+}
+
+.error {
+    color: #e74c3c;
+    text-align: center;
+    padding: 20px;
+    font-weight: bold;
+}
+
+strong {
+    margin-right: 10px;
+}
+</style>
