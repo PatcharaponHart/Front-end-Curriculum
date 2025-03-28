@@ -13,6 +13,11 @@ const routes = [
         component: () => import('@/views/pages/auth/Login.vue')
     },
     {
+        path: '/auth/login/register',
+        name: 'register',
+        component: () => import('@/views/pages/auth/Register.vue')
+    },
+    {
         path: '/auth/access',
         name: 'accessDenied',
         component: () => import('@/views/pages/auth/Access.vue')
@@ -149,17 +154,19 @@ const router = createRouter({
     routes
 });
 
-// ✅ Router Guard: ตรวจสอบ token ก่อนเข้า route
 router.beforeEach((to, from, next) => {
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-    const loggedIn = isLoggedIn(); // จาก authService.ts
+    const loggedIn = isLoggedIn();
 
     if (requiresAuth && !loggedIn) {
         next({ name: 'login' });
-    } else if (to.name === 'login' && loggedIn) {
-        // ถ้า login แล้วพยายามเข้า /login ให้เด้งไป dashboard
+    } else if (to.name === 'login' && loggedIn && from.name !== 'register') {
+        // <<< เพิ่มเงื่อนไข && from.name !== 'register'
+        // ถ้า Login แล้ว และจะไปหน้า Login *และไม่ได้มาจากหน้า Register* ให้ไป Dashboard
         next({ name: 'dashboard' });
     } else {
+        // กรณีอื่นๆ (รวมถึงกรณีที่มาจาก Register) ให้ไปตามปกติ
+        // ซึ่งถ้า to.name คือ 'login' (และมาจาก register) มันก็จะไป login ตามที่ push มา
         next();
     }
 });

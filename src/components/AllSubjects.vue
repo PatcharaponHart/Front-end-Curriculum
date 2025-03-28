@@ -1,5 +1,5 @@
 <template>
-    <span>วิชาทั้งหมดของสาขา</span>
+    <span class="text-primary" style="font-size: 1.6em">วิชาทั้งหมดของสาขา</span>
     <div class="card">
         <!-- ช่องค้นหาวิชา -->
         <div class="search-container">
@@ -14,17 +14,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
 import courseService, { Course } from '@/service/courseService';
+import { computed, onMounted, ref } from 'vue';
 
 const courses = ref<Course[]>([]);
 const searchTerm = ref('');
 const filteredCourses = computed(() => {
-    return courses.value.filter((course: Course) => 
-        course.courseCode.startsWith('01418') && 
-        (course.courseNameTH.toLowerCase().includes(searchTerm.value.toLowerCase()) || 
-        course.courseNameEN.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-        course.subjectGroup.toLowerCase().includes(searchTerm.value.toLowerCase()))
+    return courses.value.filter(
+        (course: Course) =>
+            course.courseCode.startsWith('01418') &&
+            (course.courseNameTH.toLowerCase().includes(searchTerm.value.toLowerCase()) || course.courseNameEN.toLowerCase().includes(searchTerm.value.toLowerCase()) || course.subjectGroup.toLowerCase().includes(searchTerm.value.toLowerCase()))
     );
 });
 
@@ -51,11 +50,12 @@ onMounted(async () => {
 <style scoped>
 .card {
     padding: 1rem;
+    font-size: 1.3rem;
 }
 
 .search-container {
     margin-bottom: 1rem;
     max-width: 300px;
-    margin-left: 900px; /* เลื่อนไปทางขวา */
+    margin-left: 88%; /* เลื่อนไปทางขวา */
 }
 </style>
