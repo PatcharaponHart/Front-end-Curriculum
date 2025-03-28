@@ -1,5 +1,5 @@
 <template>
-    <span class="text-primary" style="font-size: 1.6em">วิชาทั้งหมดของสาขา</span>
+    <h2 class="text-primary">วิชาทั้งหมดของสาขา</h2>
     <div class="card">
         <!-- ช่องค้นหาวิชา -->
         <div class="search-container">
@@ -56,6 +56,6 @@ onMounted(async () => {
 .search-container {
     margin-bottom: 1rem;
     max-width: 300px;
-    margin-left: 88%; /* เลื่อนไปทางขวา */
+    margin-left: 900px; /* เลื่อนไปทางขวา */
 }
 </style>
