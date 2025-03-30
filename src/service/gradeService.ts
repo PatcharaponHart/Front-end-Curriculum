@@ -4,7 +4,7 @@ import axios from 'axios';
 export interface Grades {
   studentId: string;
   courseCode: string;
-  grade: string;
+  grade?: string;
   academic_year?: string;
   semester?: string;
 }
@@ -16,7 +16,7 @@ export interface StudentGradeCourseDto {
   courseCode: string;
   courseNameTH: string;
   courseNameEN: string;
-  grade: string;
+  grade?: string;
   credit: number;
 }
 
