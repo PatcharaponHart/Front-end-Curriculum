@@ -11,17 +11,15 @@ interface CreditRequirement {
 }
 
 const creditRequirements = ref<CreditRequirement[]>([
-  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระอยู่ดีมีสุข (พลศึกษา)", requiredCredits: 1, earnedCredits: 1, isCompleted: true },
-  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระอยู่ดีมีสุข ไม่น้อยกว่า", requiredCredits: 2, earnedCredits: 3, isCompleted: true },
-  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระศาสตร์แห่งผู้ประกอบการ ไม่น้อยกว่า", requiredCredits: 3, earnedCredits: 3, isCompleted: true },
-  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระภาษาและการสื่อสาร", requiredCredits: 13, earnedCredits: 13, isCompleted: true },
-  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระพลเมืองไทยและพลเมืองโลก ไม่น้อยกว่า", requiredCredits: 3, earnedCredits: 3, isCompleted: true },
-  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระสุขภาวะศาสตร์ ไม่น้อยกว่า", requiredCredits: 3, earnedCredits: 0, isCompleted: false },
-  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระของหมวดการศึกษาทั่วไป วิชาของคณะต้นสังกัด", requiredCredits: 5, earnedCredits: 6, isCompleted: true },
+  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระอยู่ดีมีสุข ", requiredCredits: 3, earnedCredits: 1, isCompleted: true },
+  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระศาสตร์แห่งผู้ประกอบการ", requiredCredits: 3, earnedCredits: 3, isCompleted: true },
+  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระภาษากับการสื่อสาร", requiredCredits: 13, earnedCredits: 3, isCompleted: true },
+  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระพลเมืองไทยและพลเมืองโลก", requiredCredits: 3, earnedCredits: 13, isCompleted: true },
+  { group: "หมวดวิชาศึกษาทั่วไป ไม่น้อยกว่า 30 หน่วยกิต", category: "กลุ่มสาระสุนทรียศาสตร์", requiredCredits: 3, earnedCredits: 3, isCompleted: true },
   
-  { group: "หมวดวิชาเฉพาะ ไม่น้อยกว่า 92 หน่วยกิต", category: "วิชาแกน", requiredCredits: 16, earnedCredits: 16, isCompleted: true },
-  { group: "หมวดวิชาเฉพาะ ไม่น้อยกว่า 92 หน่วยกิต", category: "วิชาเอกบังคับ", requiredCredits: 55, earnedCredits: 56, isCompleted: true },
-  { group: "หมวดวิชาเฉพาะ ไม่น้อยกว่า 92 หน่วยกิต", category: "วิชาเอกเลือก", requiredCredits: 21, earnedCredits: 12, isCompleted: false },
+  { group: "หมวดวิชาเฉพาะ ไม่น้อยกว่า 88 หน่วยกิต", category: "วิชาแกน", requiredCredits: 12, earnedCredits: 16, isCompleted: true },
+  { group: "หมวดวิชาเฉพาะ ไม่น้อยกว่า 88 หน่วยกิต", category: "วิชาเฉพาะบังคับ", requiredCredits: 58, earnedCredits: 56, isCompleted: true },
+  { group: "หมวดวิชาเฉพาะ ไม่น้อยกว่า 88 หน่วยกิต", category: "วิชาเฉพาะเลือก", requiredCredits: 18, earnedCredits: 12, isCompleted: false },
 
   { group: "หมวดวิชาเลือกเสรี ไม่น้อยกว่า 6 หน่วยกิต", category: "หมวดวิชาเลือกเสรี", requiredCredits: 6, earnedCredits: 6, isCompleted: true },
 ]);
