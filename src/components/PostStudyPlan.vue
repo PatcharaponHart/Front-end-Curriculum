@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import Select from 'primevue/select';
-import Button from 'primevue/button';
 import { getCurrentUser } from '@/service/authService';
 import gradeService from '@/service/gradeService';
+import Button from 'primevue/button';
+import Select from 'primevue/select';
+import { computed, onMounted, ref } from 'vue';
 
 // ข้อมูลภาคการศึกษา
 const yr1Sem1 = ref([]);
@@ -133,12 +133,12 @@ const calculateGPAX = () => {
 };
 
 // เมื่อเปลี่ยนเกรด
-const courseGradeChanged = (course: { isModified: boolean; }) => {
+const courseGradeChanged = (course: { isModified: boolean }) => {
     course.isModified = true;
 };
 
 // กำหนด class ของแถวตามสถานะ
-const getRowClass = (data: { isModified: any; grade: string; }) => {
+const getRowClass = (data: { isModified: any; grade: string }) => {
     return {
         'modified-row': data.isModified,
         'passed-course': data.grade && data.grade !== 'F' && data.grade !== 'W' && data.grade !== 'I'
@@ -146,33 +146,74 @@ const getRowClass = (data: { isModified: any; grade: string; }) => {
 };
 
 // บันทึกเกรดของรายวิชา
-const saveGrade = async (course : any) => {
-    if (!course.courseCode) {
-        return; // ไม่บันทึกหากไม่มีรหัสวิชา
-    }
+interface CourseDisplayData {
+    courseCode: string;
+    grade: string | null;
+    credit: number;
+    isModified: boolean;
+    wasInitiallyNull?: boolean; // ทำให้เป็น optional เผื่อกรณีไม่ได้ใส่มา
+    // properties อื่นๆ ...
+}
 
+const saveGrade = async (course: CourseDisplayData) => {
+    // ใช้ Type ที่สร้างขึ้น
+    if (!course.courseCode) {
+        console.warn('Save cancelled: Missing course code.');
+        return;
+    }
     try {
         const currentUser = getCurrentUser();
-
-        if (!currentUser.studentID) {
+        if (!currentUser?.studentID) {
             errorMessage.value = 'ไม่พบรหัสนักศึกษา';
             return;
         }
-
         isSaving.value = true;
+        errorMessage.value = null;
 
-        await gradeService.editGrade({
-            studentID: currentUser.studentID,
+        const payload: Grades = {
+            studentId: currentUser.studentID,
             courseCode: course.courseCode,
-            grade: course.grade,
+            grade: course.grade || '', // ส่ง '' ถ้า grade เป็น null (หรือจัดการตามที่ Backend ต้องการ)
             credit: course.credit
-        });
+        };
 
-        // ล้างสถานะการแก้ไข
-        course.isModified = false;
-    } catch (error) {
-        console.error('เกิดข้อผิดพลาดในการบันทึกเกรด:', error);
-        errorMessage.value = 'เกิดข้อผิดพลาดในการบันทึกเกรด';
+        // --- ส่วนตัดสินใจ Push หรือ Edit ---
+        if (course.wasInitiallyNull && course.grade) {
+            // กรณีที่ 1: ตอนแรกไม่มีเกรด (null) แต่ตอนนี้มีแล้ว -> เรียก PushGrade
+            console.log('Calling PushGrade (was initially null, now has grade)...');
+            await gradeService.pushGrade(payload);
+            // ***** เพิ่มบรรทัดนี้ *****
+            course.wasInitiallyNull = false; // อัปเดตสถานะว่าตอนนี้มีข้อมูลแล้ว
+            // ***** สิ้นสุดการเพิ่ม *****
+            course.isModified = false; // เคลียร์ isModified เหมือนเดิม
+        } else if (!course.wasInitiallyNull && course.isModified) {
+            // กรณีที่ 2: ตอนแรกมีเกรดอยู่แล้ว และมีการแก้ไข -> เรียก EditGrade
+            console.log('Calling EditGrade (had initial grade and modified)...');
+            await gradeService.editGrade(payload);
+            course.isModified = false; // เคลียร์ isModified เหมือนเดิม
+        } else if (course.wasInitiallyNull && !course.grade) {
+            // กรณีที่ 3: ตอนแรกไม่มีเกรด ตอนนี้ก็ยังไม่มี (หรือลบออก) -> อาจจะไม่ต้องทำอะไร หรือจะลบข้อมูลที่ Backend? (ต้องออกแบบเพิ่ม)
+            console.log('Skipping save (was initially null, still null/empty)');
+            // ไม่เรียก API
+        } else {
+            // กรณีอื่นๆ เช่น ตอนแรกมีเกรด แต่ไม่ได้แก้ไข (isModified=false) -> ไม่ต้องทำอะไร
+            console.log('Skipping save (not modified or other case)');
+            // ไม่เรียก API
+        }
+        // --- สิ้นสุดการตัดสินใจ ---
+
+        // ถ้ามีการเรียก API สำเร็จ (ไม่มี Error โยนออกมา) ให้เคลียร์สถานะ
+        if (!(course.wasInitiallyNull && !course.grade)) {
+            // เคลียร์ถ้าไม่ใช่กรณี 3
+            course.isModified = false;
+        }
+        console.log('Save operation completed for', payload.courseCode);
+        // แสดงข้อความสำเร็จ
+    } catch (error: any) {
+        console.error('Error saving grade:', error.response?.data || error.message || error);
+        const backendError = error.response?.data?.title || error.response?.data?.message || error.message;
+        errorMessage.value = 'เกิดข้อผิดพลาดในการบันทึกเกรด: ' + (backendError || 'ไม่ทราบสาเหตุ');
+        // แสดง Toast Error
     } finally {
         isSaving.value = false;
     }
@@ -182,53 +223,106 @@ const saveGrade = async (course : any) => {
 const saveAllGrades = async () => {
     try {
         const currentUser = getCurrentUser();
-
-        if (!currentUser.studentID) {
+        if (!currentUser?.studentID) {
             errorMessage.value = 'ไม่พบรหัสนักศึกษา';
             return;
         }
-
         isSaving.value = true;
+        errorMessage.value = null;
 
-        const modifiedCourses: { studentID: any; courseCode: any; grade: any; credit: any; }[] = [];
+        // สร้าง List แยกสำหรับ Push และ Edit
+        const gradesToPush: Grades[] = [];
+        const gradesToEdit: Grades[] = [];
+        // เก็บ reference ของ course ที่ถูก process ไว้เพื่ออัปเดต flag ทีหลัง
+        const processedCourses: any[] = [];
 
-        // รวบรวมวิชาที่มีการแก้ไข
+        // รวบรวมและคัดแยกวิชาที่มีการแก้ไข
         allSemesters.value.forEach((semester) => {
-            semester.courses.forEach((course) => {
+            semester.courses.forEach((course: any & { wasInitiallyNull?: boolean }) => {
+                // ใช้ Type ที่เหมาะสม
                 if (course.isModified && course.courseCode) {
-                    modifiedCourses.push({
-                        studentID: currentUser.studentID,
+                    const payload: Grades = {
+                        studentId: currentUser.studentID,
                         courseCode: course.courseCode,
-                        grade: course.grade,
+                        grade: course.grade || '',
                         credit: course.credit
-                    });
+                    };
+
+                    // ตัดสินใจว่าจะ Push หรือ Edit
+                    if (course.wasInitiallyNull && course.grade) {
+                        gradesToPush.push(payload);
+                    } else if (!course.wasInitiallyNull) {
+                        gradesToEdit.push(payload);
+                    }
+                    // เก็บ course ที่ต้องอัปเดต flag ไว้
+                    processedCourses.push(course);
                 }
             });
         });
 
-        if (modifiedCourses.length === 0) {
-            return; // ไม่มีข้อมูลที่ต้องบันทึก
+        let pushSuccess = true;
+        let editSuccess = true;
+
+        // --- เรียก API แยกส่วน ---
+        if (gradesToPush.length > 0) {
+            console.log('Calling PushGrades with:', gradesToPush);
+            try {
+                await gradeService.pushGrades(gradesToPush);
+                console.log('PushGrades successful');
+                // อัปเดต wasInitiallyNull สำหรับตัวที่ push สำเร็จ
+                processedCourses.forEach((course) => {
+                    if (course.wasInitiallyNull && gradesToPush.some((p) => p.courseCode === course.courseCode && p.studentId === currentUser.studentID)) {
+                        course.wasInitiallyNull = false;
+                    }
+                });
+            } catch (pushError: any) {
+                pushSuccess = false;
+                console.error('Error pushing grades:', pushError.response?.data || pushError.message || pushError);
+                errorMessage.value = 'เกิดข้อผิดพลาดในการเพิ่มเกรดใหม่: ' + (pushError.response?.data?.title || pushError.message);
+                // อาจจะหยุดการทำงานส่วน Edit ต่อ หรือปล่อยให้ทำต่อก็ได้
+            }
         }
 
-        // บันทึกข้อมูลทั้งหมด
-        await gradeService.pushGrades(modifiedCourses);
+        if (gradesToEdit.length > 0) {
+            // ต้องแน่ใจว่า gradeService.updateGrades มีอยู่ และเรียก PUT /api/Grade/UpdateGrades
+            // และ Backend UpdateGrades จัดการการ Update หลายรายการได้ (อาจจะต้องแก้ C# UpdateGrades ด้วย)
+            console.log('Calling UpdateGrades with:', gradesToEdit);
+            try {
+                await gradeService.updateGrades(gradesToEdit);
+                console.log('UpdateGrades successful');
+            } catch (editError: any) {
+                editSuccess = false;
+                console.error('Error updating grades:', editError.response?.data || editError.message || editError);
+                // ถ้ามี Error จาก Push ก่อนหน้า อาจจะรวม Error message
+                const currentError = errorMessage.value ? errorMessage.value + '; ' : '';
+                errorMessage.value = currentError + 'เกิดข้อผิดพลาดในการอัปเดตเกรดเดิม: ' + (editError.response?.data?.title || editError.message);
+            }
+        }
+        // --- สิ้นสุดการเรียก API ---
 
-        // ล้างสถานะการแก้ไข
-        allSemesters.value.forEach((semester) => {
-            semester.courses.forEach((course) => {
-                if (course.isModified) {
-                    course.isModified = false;
-                }
+        // ถ้าไม่มี Error เลย ให้ล้าง isModified ทั้งหมดที่ process ไป
+        if (pushSuccess && editSuccess && processedCourses.length > 0) {
+            processedCourses.forEach((course) => {
+                course.isModified = false;
             });
-        });
-    } catch (error) {
-        console.error('เกิดข้อผิดพลาดในการบันทึกเกรด:', error);
-        errorMessage.value = 'เกิดข้อผิดพลาดในการบันทึกเกรดทั้งหมด';
+            console.log('All modified flags cleared.');
+            // แสดงข้อความสำเร็จทั้งหมด
+        } else if (processedCourses.length === 0) {
+            console.log('No grades needed saving.');
+        } else {
+            // มี Error เกิดขึ้น อาจจะต้องแจ้งผู้ใช้เพิ่มเติม
+            console.log('Save completed with errors.');
+        }
+    } catch (error: any) {
+        // Error อื่นๆ นอกเหนือจาก API Call
+        console.error('Unexpected error in saveAllGrades:', error);
+        if (!errorMessage.value) {
+            errorMessage.value = 'เกิดข้อผิดพลาดไม่ทราบสาเหตุในการบันทึกทั้งหมด';
+        }
     } finally {
         isSaving.value = false;
     }
 };
-
 // โหลดข้อมูลเมื่อเริ่มต้นคอมโพเนนต์
 onMounted(async () => {
     try {
@@ -312,19 +406,19 @@ onMounted(async () => {
         // อัปเดตข้อมูลด้วยเกรดที่มีอยู่
         const updateSemesterWithGrades = (semesterData: any[], grades: any[]) => {
             return semesterData.map((course) => {
-                // ถ้ามีรหัสวิชา ตรวจสอบว่ามีเกรดหรือไม่
                 if (course.courseCode) {
                     const gradeInfo = grades.find((g) => g.courseCode === course.courseCode);
-                    if (gradeInfo) {
-                        return {
-                            ...course,
-                            grade: gradeInfo.grade,
-                            isModified: false
-                        };
-                    }
+                    // เพิ่ม property 'wasInitiallyNull'
+                    const wasNull = !gradeInfo; // เป็น true ถ้าไม่เจอ gradeInfo (เกรดเป็น null ตอนโหลด)
+                    return {
+                        ...course,
+                        grade: gradeInfo ? gradeInfo.grade : null,
+                        isModified: false,
+                        wasInitiallyNull: wasNull // เก็บสถานะเริ่มต้น
+                    };
                 }
-                // กรณีไม่พบข้อมูลเกรด
-                return { ...course, grade: null, isModified: false };
+                // กรณีไม่มี courseCode หรือกรณีอื่นๆ
+                return { ...course, grade: null, isModified: false, wasInitiallyNull: true }; // สมมติว่าถ้าไม่มี courseCode ก็ถือว่าเริ่มที่ null
             });
         };
 
