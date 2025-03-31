@@ -15,6 +15,7 @@ export interface StudentGradeCourseDto {
     courseCode: string;
     courseNameTH: string;
     courseNameEN: string;
+    subjectGroup: string;
     grade?: string;
     credit: number;
 }
