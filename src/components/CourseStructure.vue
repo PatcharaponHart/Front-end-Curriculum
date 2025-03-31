@@ -85,18 +85,18 @@
                 <span>ไม่น้อยกว่า 13 หน่วยกิต</span>
             </li>
 
-            <li>
-                <span style="margin-right: 507px">วิชาภาษาไทย </span>
+            <li class="arrow-item">
+                <span style="margin-right: 480px">วิชาภาษาไทย </span>
                 <span>3( – – ) หน่วยกิต</span>
             </li>
 
-            <li>
-                <span style="margin-right: 393px">วิชาภาษาต่างประเทศ 1 ภาษา </span>
+            <li class="arrow-item">
+                <span style="margin-right: 366px">วิชาภาษาต่างประเทศ 1 ภาษา </span>
                 <span>9( – – ) หน่วยกิต</span>
             </li>
 
-            <li>
-                <span style="margin-right: 405px">วิชาสารสนเทศ/คอมพิวเตอร์ </span>
+            <li class="arrow-item">
+                <span style="margin-right: 377px">วิชาสารสนเทศ/คอมพิวเตอร์ </span>
                 <span>1( – – ) หน่วยกิต</span>
             </li>
 
