@@ -157,12 +157,11 @@ const onRegister = async () => {
                     if (error.response.status === 409 || error.response.status === 400) {
                         // ตรวจสอบ 409 Conflict หรือ 400 Bad Request
                         if (error.response.data && error.response.data.message) {
-                            // ใช้ Message ที่ Backend ส่งกลับมา (เช่น "Username already exists.")
-                            detailMessage = 'ชื่อผู้ใช้นี้มีอยู่แล้ว';
+                            detailMessage = error.response.data.message; // <-- ใช้ message จาก backend
                         } else if (typeof error.response.data === 'string') {
-                            detailMessage = error.response.data;
+                            detailMessage = error.response.data; // <-- ใช้ message จาก backend (ถ้าส่งมาเป็น string)
                         } else {
-                            detailMessage = `ข้อมูลซ้ำ หรือไม่ถูกต้อง (${error.response.status})`;
+                            detailMessage = `ข้อมูลซ้ำ หรือไม่ถูกต้อง (${error.response.status})`; // ข้อความ fallback
                         }
                     }
                     // --- สิ้นสุดการตรวจสอบ Status Code ---
