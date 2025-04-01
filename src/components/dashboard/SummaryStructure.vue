@@ -152,6 +152,12 @@ const gpaInfo = computed(() => {
   };
 });
 
+// คำนวณเปอร์เซ็นต์ของ GPA เทียบกับค่าสูงสุด (4.00)
+const gpaPercentage = computed(() => {
+  const gpa = parseFloat(gpaInfo.value.gpa);
+  return (gpa / 4.0) * 100;
+});
+
 // คำนวณความก้าวหน้าของการเรียนในแต่ละหมวดหมู่
 const progressPerGroup = computed(() => {
   const groups = [...new Set(creditRequirements.value.map(item => item.group))];
@@ -171,6 +177,50 @@ const progressPerGroup = computed(() => {
   });
 });
 
+// คำนวณข้อมูลสำหรับกราฟวงกลม (Pie Chart)
+const pieChartData = computed(() => {
+  const gpa = parseFloat(gpaInfo.value.gpa);
+  const percentage = gpa / 4.0;
+  const remaining = 1 - percentage;
+  
+  // คำนวณค่าต่างๆ สำหรับ SVG
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  const gpaStrokeDasharray = circumference * percentage;
+  const remainingStrokeDasharray = circumference * remaining;
+  
+  // ผลลัพธ์แบบเกรด
+  const gradeResult = (() => {
+    if (gpa >= 3.5) return 'ดีเยี่ยม';
+    if (gpa >= 3.0) return 'ดีมาก';
+    if (gpa >= 2.5) return 'ดี';
+    if (gpa >= 2.0) return 'พอใช้';
+    if (gpa >= 1.5) return 'อ่อน';
+    if (gpa >= 1.0) return 'อ่อนมาก';
+    return 'ไม่ผ่าน';
+  })();
+  
+  // สีของกราฟตามเกรด
+  const gpaColor = (() => {
+    if (gpa >= 3.5) return '#4CAF50'; // เขียวเข้ม
+    if (gpa >= 3.0) return '#8BC34A'; // เขียวอ่อน
+    if (gpa >= 2.5) return '#CDDC39'; // เขียวเหลือง
+    if (gpa >= 2.0) return '#FFEB3B'; // เหลือง
+    if (gpa >= 1.5) return '#FFC107'; // เหลืองส้ม
+    if (gpa >= 1.0) return '#FF9800'; // ส้ม
+    return '#F44336'; // แดง
+  })();
+  
+  return {
+    radius,
+    circumference,
+    gpaStrokeDasharray,
+    remainingStrokeDasharray,
+    gradeResult,
+    gpaColor
+  };
+});
+
 onMounted(fetchStudentGradesAndCalculateCredits);
 </script>
 
@@ -188,22 +238,61 @@ onMounted(fetchStudentGradesAndCalculateCredits);
     
     <div v-else>
       <div class="mb-4 p-4 bg-gray-50 rounded-md">
-        <div class="flex justify-between">
-          <!-- <div>
-            <div class="font-medium text-gray-600">ชื่อ-นามสกุล:</div>
-            <div class="font-bold" v-if="studentGrades">
-              {{ studentGrades.firstName }} {{ studentGrades.lastName }}
+        <div class="flex justify-between items-center">
+          <!-- GPA Pie Chart -->
+          <div class="flex items-center space-x-4">
+            <div class="relative">
+              <svg height="100" width="100" class="transform -rotate-90">
+                <!-- เส้นขอบวงกลมสีเทาอ่อน (ส่วนที่เหลือ) -->
+                <circle 
+                  cx="50" 
+                  cy="50" 
+                  r="40" 
+                  stroke="#e5e7eb" 
+                  stroke-width="10" 
+                  fill="transparent"
+                />
+                <!-- ส่วนที่แสดง GPA -->
+                <circle 
+                  cx="50" 
+                  cy="50" 
+                  r="40" 
+                  stroke-width="10" 
+                  stroke-dasharray="251.2"
+                  :stroke-dashoffset="pieChartData.circumference - pieChartData.gpaStrokeDasharray"
+                  :stroke="pieChartData.gpaColor"
+                  fill="transparent" 
+                  class="transition-all duration-1000 ease-out"
+                />
+              </svg>
+              <!-- แสดงค่า GPA ตรงกลางวงกลม -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-2xl font-bold" :style="`color: ${pieChartData.gpaColor}`">{{ gpaInfo.gpa }}</span>
+                <span class="text-xs text-gray-500">GPA</span>
+              </div>
             </div>
-          </div> -->
-          <!-- <div>
-            <div class="font-medium text-gray-600">รหัสนิสิต:</div>
-            <div class="font-bold" v-if="studentGrades">
-              {{ studentGrades.studentID }}
+            
+            <div class="flex flex-col">
+              <span class="text-xl font-medium text-gray-800">เกรดเฉลี่ยสะสม</span>
+              <span class="text-sm text-gray-500">จาก 4.00</span>
+              <span class="font-medium mt-1" :style="`color: ${pieChartData.gpaColor}`">
+                {{ pieChartData.gradeResult }}
+              </span>
             </div>
-          </div> -->
+          </div>
+          
           <div>
-            <div class="font-medium text-gray-600">เกรดเฉลี่ยสะสม:</div>
-            <div class="font-bold text-primary">{{ gpaInfo.gpa }}</div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-500">
+                {{ Math.round(gpaPercentage) }}% จากเกรดสูงสุด
+              </span>
+              <div class="w-32 bg-gray-200 rounded-full h-2.5">
+                <div 
+                  class="h-2.5 rounded-full transition-all duration-1000 ease-out" 
+                  :style="`width: ${gpaPercentage}%; background-color: ${pieChartData.gpaColor}`"
+                ></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -36,7 +36,7 @@ onMounted(fetchStudentData);
             <p><strong class="text-primary">ชื่อ:</strong> {{ student.firstName }}</p>
             <p><strong class="text-primary">นามสกุล:</strong> {{ student.lastName }}</p>
             <p><strong class="text-primary">รหัสนิสิต:</strong> {{ student.studentID }}</p>
-            <p><strong class="text-primary">ภาคการศึกษา:</strong> {{ student.section }}</p>
+            <p><strong class="text-primary">หมู่เรียน:</strong> {{ student.section }}</p>
         </div>
     </div>
 </template>

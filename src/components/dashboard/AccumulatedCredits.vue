@@ -33,7 +33,7 @@ onMounted(fetchStudentCredits);
         <div v-if="isLoading" class="loading">กำลังโหลดข้อมูล...</div>
         <div v-else-if="errorMessage" class="error">{{ errorMessage }}</div>
         <div v-else-if="studentCredits" class="credits-info">
-            <p><strong class="text-primary">หน่วยกิตรวม:</strong> {{ studentCredits.totalCredits }}/124</p>
+            <p><strong class="text-primary">หน่วยกิตทั้งหมด:</strong> {{ studentCredits.totalCredits }}</p>
             <p><strong class="text-primary">จำนวนวิชาทั้งหมด:</strong> {{ studentCredits.grades.length }}</p>
         </div>
     </div>

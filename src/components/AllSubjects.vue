@@ -14,9 +14,9 @@
         </DataTable>
     </div>
 
-    <div class="button-container">
-        <Button label="เพิ่มรายวิชา" icon="pi pi-plus" class="p-button-success" @click="openAddDialog" :loading="isSaving" />
-    </div>
+    <div v-if="isAdmin" class="button-container">
+      <Button label="เพิ่มรายวิชา" icon="pi pi-plus" class="p-button-success" @click="openAddDialog" :loading="isSaving" />
+    </div>
 
     <Dialog v-model:visible="isAddDialogVisible" header="เพิ่มรายวิชาใหม่" :modal="true" :style="{ width: '450px' }">
         <div class="form-container p-fluid">
@@ -60,9 +60,12 @@ import InputText from 'primevue/inputtext';
 import Toast from 'primevue/toast'; // Import Toast component
 import { useToast } from 'primevue/usetoast'; // Import useToast hook
 import { computed, onMounted, reactive, ref } from 'vue';
-
+import { getCurrentUser } from '@/service/authService';
 // --- Initialize Toast ---
 const toast = useToast();
+
+const currentUser = getCurrentUser();
+console.log('ข้อมูลผู้ใช้ปัจจุบัน (currentUser):', currentUser);
 
 // --- State ต่างๆ ---
 const courses = ref<Course[]>([]);
@@ -102,7 +105,13 @@ const isFormValid = computed(() => {
     // ... (เหมือนเดิม) ...
     return newCourse.courseCode && newCourse.courseNameTH && newCourse.courseNameEN && newCourse.credit !== null && newCourse.credit >= 0 && newCourse.subjectGroup;
 });
-
+const isAdmin = computed(() => {
+     // ใช้ .name และเทียบกับค่าที่ถูกต้องสำหรับ Admin
+     const adminNameIdentifier = 'แอดมิน  ระบบติดตาม';
+     const result = !!currentUser && currentUser.name === adminNameIdentifier;
+     console.log(`ตรวจสอบ isAdmin: currentUser.name='${currentUser?.name}', ต้องการ='${adminNameIdentifier}', ผลลัพธ์=${result}`); // แสดง log เพื่อ debug
+     return result;
+ });
 // --- Lifecycle Hooks ---
 onMounted(async () => {
     await fetchCourses();
