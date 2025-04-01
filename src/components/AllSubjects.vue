@@ -6,6 +6,9 @@
     </div>
 
     <div class="card">
+        <div class="search-container">
+            <InputText v-model="searchTerm" placeholder="ค้นหาชื่อวิชา, กลุ่มวิชา" style="width: 270px" />
+        </div>
         <DataTable :value="filteredCourses" tableStyle="min-width: 50rem" :loading="isLoading">
             <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" />
         </DataTable>
@@ -211,8 +214,9 @@ const saveNewCourse = async () => {
 
 .search-container {
     margin-bottom: 1rem;
-    max-width: 300px;
-    margin-left: auto;
+    max-width: 272px;
+    margin-left: auto; /* ดันไปทางขวา */
+    margin-right: 0;
 }
 
 .button-container {
