@@ -53,7 +53,14 @@ const allSemesters = computed(() => [
 const totalCredits = computed(() => {
     let total = 0;
     const gradeValues: { [key: string]: number } = {
-        A: 4.0, 'B+': 3.5, B: 3.0, 'C+': 2.5, C: 2.0, 'D+': 1.5, D: 1.0, F: 0
+        A: 4.0,
+        'B+': 3.5,
+        B: 3.0,
+        'C+': 2.5,
+        C: 2.0,
+        'D+': 1.5,
+        D: 1.0,
+        F: 0
     };
     allSemesters.value.forEach((semester) => {
         semester.courses.forEach((course) => {
@@ -70,7 +77,14 @@ const calculateGradePoint = (grade: string | null, credit: number): string => {
     if (!grade || ['W', 'I'].includes(grade)) return '-';
 
     const gradeValues: { [key: string]: number } = {
-        A: 4.0, 'B+': 3.5, B: 3.0, 'C+': 2.5, C: 2.0, 'D+': 1.5, D: 1.0, F: 0
+        A: 4.0,
+        'B+': 3.5,
+        B: 3.0,
+        'C+': 2.5,
+        C: 2.0,
+        'D+': 1.5,
+        D: 1.0,
+        F: 0
     };
 
     // ตรวจสอบเผื่อเป็นเกรดที่ไม่ใช่ A-F แต่หลุดมา (เช่น W, I)
@@ -83,8 +97,15 @@ const calculateGradePoint = (grade: string | null, credit: number): string => {
 const calculateSemesterGPA = (courses: CourseDisplayData[]): number => {
     let totalPoints = 0;
     let totalCreditsForGPA = 0;
-     const gradeValues: { [key: string]: number } = {
-        A: 4.0, 'B+': 3.5, B: 3.0, 'C+': 2.5, C: 2.0, 'D+': 1.5, D: 1.0, F: 0
+    const gradeValues: { [key: string]: number } = {
+        A: 4.0,
+        'B+': 3.5,
+        B: 3.0,
+        'C+': 2.5,
+        C: 2.0,
+        'D+': 1.5,
+        D: 1.0,
+        F: 0
     };
 
     courses.forEach((course) => {
@@ -96,18 +117,25 @@ const calculateSemesterGPA = (courses: CourseDisplayData[]): number => {
     });
 
     // ป้องกันการหารด้วยศูนย์
-    return totalCreditsForGPA === 0 ? 0.00 : totalPoints / totalCreditsForGPA;
+    return totalCreditsForGPA === 0 ? 0.0 : totalPoints / totalCreditsForGPA;
 };
 
 // คำนวณหน่วยกิตรวมของภาคการศึกษา (ที่นับเกรด A-F)
 const calculateSemesterCredits = (courses: CourseDisplayData[]): number => {
     let total = 0;
-     const gradeValues: { [key: string]: number } = {
-        A: 4.0, 'B+': 3.5, B: 3.0, 'C+': 2.5, C: 2.0, 'D+': 1.5, D: 1.0, F: 0
+    const gradeValues: { [key: string]: number } = {
+        A: 4.0,
+        'B+': 3.5,
+        B: 3.0,
+        'C+': 2.5,
+        C: 2.0,
+        'D+': 1.5,
+        D: 1.0,
+        F: 0
     };
     courses.forEach((course) => {
         if (course.grade && gradeValues.hasOwnProperty(course.grade)) {
-             total += course.credit;
+            total += course.credit;
         }
     });
     return total;
@@ -118,12 +146,19 @@ const calculateGPAX = (): number => {
     let totalPoints = 0;
     let totalCreditsForGPA = 0;
     const gradeValues: { [key: string]: number } = {
-        A: 4.0, 'B+': 3.5, B: 3.0, 'C+': 2.5, C: 2.0, 'D+': 1.5, D: 1.0, F: 0
+        A: 4.0,
+        'B+': 3.5,
+        B: 3.0,
+        'C+': 2.5,
+        C: 2.0,
+        'D+': 1.5,
+        D: 1.0,
+        F: 0
     };
 
     allSemesters.value.forEach((semester) => {
         semester.courses.forEach((course) => {
-             // คำนวณ GPAX เฉพาะเกรดที่มีค่า (A-F)
+            // คำนวณ GPAX เฉพาะเกรดที่มีค่า (A-F)
             if (course.grade && gradeValues.hasOwnProperty(course.grade)) {
                 totalPoints += gradeValues[course.grade] * course.credit;
                 totalCreditsForGPA += course.credit;
@@ -132,7 +167,7 @@ const calculateGPAX = (): number => {
     });
 
     // ป้องกันการหารด้วยศูนย์
-    return totalCreditsForGPA === 0 ? 0.00 : totalPoints / totalCreditsForGPA;
+    return totalCreditsForGPA === 0 ? 0.0 : totalPoints / totalCreditsForGPA;
 };
 
 // --- ฟังก์ชัน UI Helpers ---
@@ -157,25 +192,25 @@ const getPlaceholderCourseCode = (courseNameTH: string): string | null => {
     // *** กรุณาปรับแก้ Placeholder Codes ให้ตรงกับที่ Backend คาดหวัง ***
     // ใช้ 'XXXX' หรือ '0000' หรือรหัสเฉพาะอื่นๆ
     const mappings: { [key: string]: string } = {
-        'วิชาภาษาไทย': '12230000', 
+        'วิชาภาษาไทย': '12230000',
         'วิชาภาษาต่างประเทศ 1 ภาษา (1)': '12240001',
         'วิชาภาษาต่างประเทศ 1 ภาษา (2)': '12240002',
         'วิชาภาษาต่างประเทศ 1 ภาษา (3)': '12240003',
-        'กิจกรรมพลศึกษา': '01175xxx', 
-        'วิชาศึกษาทั่วไปกลุ่มสาระศาสตร์แห่งผู้ประกอบการ': '01310000', 
-        'วิชาศึกษาทั่วไปกลุ่มสาระสุนทรียศาสตร์': '01320000', 
-        'วิชาศึกษาทั่วไปกลุ่มสาระอยู่ดีมีสุข': '01330000', 
+        'กิจกรรมพลศึกษา': '01175xxx',
+        'วิชาศึกษาทั่วไปกลุ่มสาระศาสตร์แห่งผู้ประกอบการ': '01310000',
+        'วิชาศึกษาทั่วไปกลุ่มสาระสุนทรียศาสตร์': '01320000',
+        'วิชาศึกษาทั่วไปกลุ่มสาระอยู่ดีมีสุข': '01330000',
         'วิชาศึกษาทั่วไปใน 5 กลุ่มสาระ (1)': '01340001',
         'วิชาศึกษาทั่วไปใน 5 กลุ่มสาระ (2)': '01340002',
-        'วิชาศึกษาทั่วไปกลุ่มสาระพลเมืองไทยและพลเมืองโลก': '01350000', 
-        'วิชาสารสนเทศ/คอมพิวเตอร์': '01418000', 
+        'วิชาศึกษาทั่วไปกลุ่มสาระพลเมืองไทยและพลเมืองโลก': '01350000',
+        'วิชาสารสนเทศ/คอมพิวเตอร์': '01418000',
         'วิชาเฉพาะเลือก (1)': '14450001',
         'วิชาเฉพาะเลือก (2)': '14450002',
         'วิชาเฉพาะเลือก (3)': '14450003',
         'วิชาเฉพาะเลือก (4)': '14450004',
         'วิชาเฉพาะเลือก (5)': '14450005',
         'วิชาเลือกเสรี (1)': '00001111',
-        'วิชาเลือกเสรี (2)': '00001112',
+        'วิชาเลือกเสรี (2)': '00001112'
         // เพิ่มเติม: ตรวจสอบวิชาอื่นๆ ใน template ที่ courseCode เป็น null และเพิ่ม mapping ที่นี่
     };
 
@@ -183,6 +218,34 @@ const getPlaceholderCourseCode = (courseNameTH: string): string | null => {
 };
 
 // --- ฟังก์ชันบันทึกข้อมูล ---
+
+const otherCourses = ref<CourseDisplayData[]>([]);
+
+const courseDataChanged = (course: CourseDisplayData) => {
+    // ทำการอัปเดตข้อมูล course ใน otherCourses ref
+    const index = otherCourses.value.findIndex((c) => c.courseCode === course.courseCode);
+    if (index !== -1) {
+        otherCourses.value[index] = { ...course };
+    }
+};
+const addNewOtherCourse = () => {
+    // เพิ่มวิชาใหม่ใน otherCourses ref
+    otherCourses.value.push({
+        courseCode: '',
+        courseNameTH: '',
+        grade: '',
+        credit: 0,
+        isModified: true,
+        wasInitiallyNull: true
+    });
+};
+const removeOtherCourse = (course: CourseDisplayData) => {
+    // ลบวิชาใน otherCourses ref
+    const index = otherCourses.value.findIndex((c) => c.courseCode === course.courseCode);
+    if (index !== -1) {
+        otherCourses.value.splice(index, 1);
+    }
+};
 
 // บันทึกเกรดของรายวิชาเดียว
 const saveGrade = async (course: CourseDisplayData) => {
@@ -226,27 +289,26 @@ const saveGrade = async (course: CourseDisplayData) => {
             course.wasInitiallyNull = false; // อัปเดตสถานะว่ามีข้อมูลแล้ว
             apiCalled = true;
         } else if (!course.wasInitiallyNull && course.isModified) {
-             // ถ้าตอนแรกมีข้อมูล และมีการแก้ไข (ไม่ว่าจะแก้เป็นเกรดอะไร หรือลบเกรด)
+            // ถ้าตอนแรกมีข้อมูล และมีการแก้ไข (ไม่ว่าจะแก้เป็นเกรดอะไร หรือลบเกรด)
             console.log('Calling EditGrade...', payload);
             await gradeService.editGrade(payload);
-             apiCalled = true;
+            apiCalled = true;
         } else if (course.wasInitiallyNull && !course.grade) {
             // ตอนแรก null, แก้ไข แต่ก็ยังเป็น null -> ไม่ต้องทำอะไร ไม่ถือว่ามีการเปลี่ยนแปลงข้อมูล
-             console.log('Skipping save (was initially null, still null/empty)');
-             // ควรเคลียร์ isModified ด้วย เพราะถือว่าไม่มีการเปลี่ยนแปลงที่ต้องบันทึก
-             course.isModified = false;
+            console.log('Skipping save (was initially null, still null/empty)');
+            // ควรเคลียร์ isModified ด้วย เพราะถือว่าไม่มีการเปลี่ยนแปลงที่ต้องบันทึก
+            course.isModified = false;
         } else {
-             // ไม่ได้แก้ไข หรือกรณีอื่นๆ ที่ไม่ต้องเรียก API
+            // ไม่ได้แก้ไข หรือกรณีอื่นๆ ที่ไม่ต้องเรียก API
             console.log('Skipping save (not modified or other case)');
         }
 
         // เคลียร์ isModified ถ้า API ถูกเรียกและสำเร็จ
         if (apiCalled) {
             course.isModified = false;
-             console.log('Save operation completed for', effectiveCourseCode);
-             // อาจจะแสดง Toast แจ้งสำเร็จสำหรับรายการนี้
+            console.log('Save operation completed for', effectiveCourseCode);
+            // อาจจะแสดง Toast แจ้งสำเร็จสำหรับรายการนี้
         }
-
     } catch (error: any) {
         console.error('Error saving grade:', error.response?.data || error.message || error);
         const backendError = error.response?.data?.title || error.response?.data?.message || error.message;
@@ -304,11 +366,12 @@ const saveAllGrades = async () => {
                     if (course.wasInitiallyNull && course.grade) {
                         gradesToPush.push(payload);
                         coursesToResetFlag.push(course); // เพิ่มในรายการที่จะเคลียร์ flag
-                    } else if (!course.wasInitiallyNull) { // ถ้าตอนแรกมีข้อมูล (ไม่ว่าจะแก้เป็นเกรดอะไร หรือลบ)
+                    } else if (!course.wasInitiallyNull) {
+                        // ถ้าตอนแรกมีข้อมูล (ไม่ว่าจะแก้เป็นเกรดอะไร หรือลบ)
                         gradesToEdit.push(payload);
                         coursesToResetFlag.push(course); // เพิ่มในรายการที่จะเคลียร์ flag
                     } else if (course.wasInitiallyNull && !course.grade) {
-                         // ตอนแรก null, แก้แล้ว แต่ก็ยังเป็น null -> ไม่ต้องทำอะไร และเคลียร์ flag ได้เลย
+                        // ตอนแรก null, แก้แล้ว แต่ก็ยังเป็น null -> ไม่ต้องทำอะไร และเคลียร์ flag ได้เลย
                         console.log(`Clearing modified flag for ${effectiveCourseCode} - was null, still null.`);
                         course.isModified = false; // เคลียร์ flag ที่นี่เลย
                     }
@@ -317,23 +380,21 @@ const saveAllGrades = async () => {
         });
 
         // ตรวจสอบว่ามีอะไรต้องบันทึกหรือไม่
-         if (gradesToPush.length === 0 && gradesToEdit.length === 0) {
+        if (gradesToPush.length === 0 && gradesToEdit.length === 0) {
             console.log('No grades need saving via API.');
-             if (skippedCourses.length > 0) {
-                 errorMessage.value = `มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้เนื่องจากไม่พบรหัสวิชา: ${skippedCourses.map(s => s.name).join(', ')}`;
-             } else {
-                errorMessage.value = "ไม่มีการเปลี่ยนแปลงที่ต้องบันทึก"; // หรือใช้ Toast แจ้งเตือน
-             }
+            if (skippedCourses.length > 0) {
+                errorMessage.value = `มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้เนื่องจากไม่พบรหัสวิชา: ${skippedCourses.map((s) => s.name).join(', ')}`;
+            } else {
+                errorMessage.value = 'ไม่มีการเปลี่ยนแปลงที่ต้องบันทึก'; // หรือใช้ Toast แจ้งเตือน
+            }
             isSaving.value = false;
             return; // ออกจากฟังก์ชันถ้าไม่มีอะไรส่งไป API
         }
-
 
         let pushSuccess = true;
         let editSuccess = true;
         let pushErrorMsg: string | null = null;
         let editErrorMsg: string | null = null;
-
 
         // --- เรียก API Push ---
         if (gradesToPush.length > 0) {
@@ -343,14 +404,14 @@ const saveAllGrades = async () => {
                 // ถ้าไม่มี ต้องวนลูปเรียก gradeService.pushGrade ทีละตัว
                 await gradeService.pushGrades(gradesToPush);
                 console.log('PushGrades successful');
-                 // อัปเดต wasInitiallyNull สำหรับตัวที่ push สำเร็จ (สำคัญมาก)
-                 coursesToResetFlag.forEach((course) => {
-                     // หา effectiveCode อีกครั้งเผื่อกรณี
-                     let effectiveCode = course.courseCode || getPlaceholderCourseCode(course.courseNameTH);
-                     if (course.wasInitiallyNull && gradesToPush.some(p => p.courseCode === effectiveCode)) {
-                         course.wasInitiallyNull = false;
-                     }
-                 });
+                // อัปเดต wasInitiallyNull สำหรับตัวที่ push สำเร็จ (สำคัญมาก)
+                coursesToResetFlag.forEach((course) => {
+                    // หา effectiveCode อีกครั้งเผื่อกรณี
+                    let effectiveCode = course.courseCode || getPlaceholderCourseCode(course.courseNameTH);
+                    if (course.wasInitiallyNull && gradesToPush.some((p) => p.courseCode === effectiveCode)) {
+                        course.wasInitiallyNull = false;
+                    }
+                });
             } catch (pushError: any) {
                 pushSuccess = false;
                 console.error('Error pushing grades:', pushError.response?.data || pushError.message || pushError);
@@ -367,29 +428,30 @@ const saveAllGrades = async () => {
             try {
                 for (const gradePayload of gradesToEdit) {
                     try {
-                         await gradeService.editGrade(gradePayload);
+                        await gradeService.editGrade(gradePayload);
                     } catch (singleEditError: any) {
                         individualEditErrors++;
                         console.error(`Error editing grade ${gradePayload.courseCode}:`, singleEditError.response?.data || singleEditError.message || singleEditError);
-                         // เก็บข้อผิดพลาดแรก หรือข้อผิดพลาดรวม (อาจจะยาวไป)
-                         if (!editErrorMsg) {
+                        // เก็บข้อผิดพลาดแรก หรือข้อผิดพลาดรวม (อาจจะยาวไป)
+                        if (!editErrorMsg) {
                             editErrorMsg = `เกิดข้อผิดพลาดในการอัปเดตเกรดวิชา ${gradePayload.courseCode}: ` + (singleEditError.response?.data?.title || singleEditError.message || 'ไม่ทราบสาเหตุ');
-                         }
+                        }
                     }
                 }
                 if (individualEditErrors === 0) {
                     console.log('Edit Grades successful');
                 } else {
-                     console.log(`Edit Grades completed with ${individualEditErrors} errors.`);
-                     editSuccess = false; // มี error ในการ edit อย่างน้อย 1 รายการ
-                     // editErrorMsg ถูกกำหนดค่าแล้วใน loop
+                    console.log(`Edit Grades completed with ${individualEditErrors} errors.`);
+                    editSuccess = false; // มี error ในการ edit อย่างน้อย 1 รายการ
+                    // editErrorMsg ถูกกำหนดค่าแล้วใน loop
                 }
-
-            } catch (loopError: any) { // Error ที่เกิดนอกเหนือจากการเรียก API แต่ละตัว (ไม่น่าเกิด)
+            } catch (loopError: any) {
+                // Error ที่เกิดนอกเหนือจากการเรียก API แต่ละตัว (ไม่น่าเกิด)
                 editSuccess = false;
                 console.error('Unexpected error during editing loop:', loopError);
-                if(!editErrorMsg) { // ถ้ายังไม่มี error message จากข้างใน
-                   editErrorMsg = 'เกิดข้อผิดพลาดระหว่างการอัปเดตเกรด';
+                if (!editErrorMsg) {
+                    // ถ้ายังไม่มี error message จากข้างใน
+                    editErrorMsg = 'เกิดข้อผิดพลาดระหว่างการอัปเดตเกรด';
                 }
             }
         }
@@ -405,41 +467,39 @@ const saveAllGrades = async () => {
             console.log('All processed modified flags cleared.');
             // แสดงข้อความสำเร็จ (อาจรวมถึงรายการที่ข้าม)
             if (skippedCourses.length > 0) {
-                 errorMessage.value = `บันทึกสำเร็จ ${coursesToResetFlag.length} รายการ มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้: ${skippedCourses.map(s => s.name).join(', ')}`;
-                 // ใช้ Toast สีเหลือง (Warning)
+                errorMessage.value = `บันทึกสำเร็จ ${coursesToResetFlag.length} รายการ มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้: ${skippedCourses.map((s) => s.name).join(', ')}`;
+                // ใช้ Toast สีเหลือง (Warning)
             } else {
-                 // แสดง Toast สีเขียว สำเร็จสมบูรณ์
-                 console.log("บันทึกข้อมูลทั้งหมดสำเร็จ");
-                 // อาจจะตั้งค่า Success message ให้แสดงใน template ชั่วคราว
-                 // successMessage.value = "บันทึกข้อมูลทั้งหมดสำเร็จ";
+                // แสดง Toast สีเขียว สำเร็จสมบูรณ์
+                console.log('บันทึกข้อมูลทั้งหมดสำเร็จ');
+                // อาจจะตั้งค่า Success message ให้แสดงใน template ชั่วคราว
+                // successMessage.value = "บันทึกข้อมูลทั้งหมดสำเร็จ";
             }
-
         } else {
-             // มี Error เกิดขึ้น หรือ มีการข้ามรายการ และ API ล้มเหลว
-             console.log('Save completed with errors or skipped items.');
-             let finalErrorMessage = "";
-             if (pushErrorMsg) finalErrorMessage += pushErrorMsg;
-             if (editErrorMsg) finalErrorMessage += (finalErrorMessage ? "; " : "") + editErrorMsg;
+            // มี Error เกิดขึ้น หรือ มีการข้ามรายการ และ API ล้มเหลว
+            console.log('Save completed with errors or skipped items.');
+            let finalErrorMessage = '';
+            if (pushErrorMsg) finalErrorMessage += pushErrorMsg;
+            if (editErrorMsg) finalErrorMessage += (finalErrorMessage ? '; ' : '') + editErrorMsg;
 
-             if (skippedCourses.length > 0) {
-                 finalErrorMessage += (finalErrorMessage ? "; " : "") + `มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้เนื่องจากไม่พบรหัสวิชา.`;
-             }
-             errorMessage.value = finalErrorMessage || "เกิดข้อผิดพลาดไม่ทราบสาเหตุในการบันทึก"; // ข้อความ fallback
-             // แสดง Toast Error รวม
-             // *** สำคัญ: ไม่เคลียร์ isModified ของรายการที่ API ล้มเหลว ***
+            if (skippedCourses.length > 0) {
+                finalErrorMessage += (finalErrorMessage ? '; ' : '') + `มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้เนื่องจากไม่พบรหัสวิชา.`;
+            }
+            errorMessage.value = finalErrorMessage || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุในการบันทึก'; // ข้อความ fallback
+            // แสดง Toast Error รวม
+            // *** สำคัญ: ไม่เคลียร์ isModified ของรายการที่ API ล้มเหลว ***
         }
-
     } catch (error: any) {
         console.error('Unexpected error in saveAllGrades:', error);
-        if (!errorMessage.value) { // ถ้ายังไม่มี error message จากข้างใน
+        if (!errorMessage.value) {
+            // ถ้ายังไม่มี error message จากข้างใน
             errorMessage.value = 'เกิดข้อผิดพลาดไม่ทราบสาเหตุในการบันทึกทั้งหมด';
         }
-         // แสดง Toast Error
+        // แสดง Toast Error
     } finally {
         isSaving.value = false; // สิ้นสุดการบันทึกทั้งหมด
     }
 };
-
 
 // --- โหลดข้อมูลเมื่อเริ่มต้นคอมโพเนนต์ ---
 onMounted(async () => {
@@ -455,67 +515,82 @@ onMounted(async () => {
 
         // --- โครงสร้างหลักสูตร (Template) ---
         // *** ตรวจสอบความถูกต้องและครบถ้วนของหลักสูตร และกำหนด courseCode: null สำหรับวิชาไม่มีรหัส ***
-         const curriculumTemplate = {
-             yr1Sem1: [
-                 { courseCode: '01417111', courseNameTH: 'แคลคูลัส I', credit: 3 },
-                 { courseCode: '01418111', courseNameTH: 'วิทยาการคอมพิวเตอร์เบื้องต้น', credit: 2 },
-                 { courseCode: '01418112', courseNameTH: 'แนวคิดการโปรแกรมเบื้องต้น', credit: 3 },
-                 { courseCode: '01418141', courseNameTH: 'ทรัพย์สินทางปัญญาและจรรยาบรรณวิชาชีพ', credit: 3 },
-                 { courseCode: '01999111', courseNameTH: 'ศาสตร์แห่งแผ่นดิน', credit: 2 },
-                 { courseCode: null, courseNameTH: 'วิชาภาษาไทย', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาภาษาต่างประเทศ 1 ภาษา (1)', credit: 3 }
-             ],
-             yr1Sem2: [
-                 { courseCode: '01417322', courseNameTH: 'พีชคณิตเชิงเส้นเบื้องต้น', credit: 3 },
-                 { courseCode: '01418113', courseNameTH: 'การโปรแกรมคอมพิวเตอร์', credit: 3 },
-                 { courseCode: '01418131', courseNameTH: 'การโปรแกรมทางสถิติ', credit: 3 },
-                 { courseCode: '01418132', courseNameTH: 'หลักมูลการคณนา', credit: 3 },
-                 { courseCode: null, courseNameTH: 'กิจกรรมพลศึกษา', credit: 1 }, // ใช้ null ถ้าจะ map เป็น placeholder
-                 { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปกลุ่มสาระศาสตร์แห่งผู้ประกอบการ', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปกลุ่มสาระสุนทรียศาสตร์', credit: 3 }
-             ],
-              yr2Sem1: [
-                 { courseCode: '01418211', courseNameTH: 'การสร้างซอฟต์แวร์', credit: 3 },
-                 { courseCode: '01418231', courseNameTH: 'โครงสร้างข้อมูลและขั้นตอนวิธี', credit: 3 },
-                 { courseCode: '01418233', courseNameTH: 'สถาปัตยกรรมคอมพิวเตอร์', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (1)', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาสารสนเทศ/คอมพิวเตอร์', credit: 1 }, // Credit 1?
-                 { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปกลุ่มสาระอยู่ดีมีสุข', credit: 2 },
-                 { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปใน 5 กลุ่มสาระ (1)', credit: 3 }
-             ],
-             yr2Sem2: [
-                 { courseCode: '01418221', courseNameTH: 'ระบบฐานข้อมูลเบื้องต้น', credit: 3 },
-                 { courseCode: '01418232', courseNameTH: 'การออกแบบและวิเคราะห์ขั้นตอนวิธี', credit: 3 },
-                 { courseCode: '01418236', courseNameTH: 'ระบบปฏิบัติการ', credit: 3 },
-                 { courseCode: '01418261', courseNameTH: 'หลักพื้นฐานของปัญญาประดิษฐ์', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (2)', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาภาษาต่างประเทศ 1 ภาษา (2)', credit: 3 }
-             ],
-              yr3Sem1: [
-                 { courseCode: '01418321', courseNameTH: 'การวิเคราะห์และการออกแบบระบบ', credit: 3 },
-                 { courseCode: '01418331', courseNameTH: 'ทฤษฎีการคำนวณ', credit: 3 },
-                 { courseCode: '01418351', courseNameTH: 'หลักการเครือข่ายคอมพิวเตอร์และการประมวลผลบนคลาวด์', credit: 3 },
-                 { courseCode: '01418390', courseNameTH: 'การเตรียมความพร้อมสหกิจศึกษา', credit: 1 },
-                 { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (3)', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาภาษาต่างประเทศ 1 ภาษา (3)', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปกลุ่มสาระพลเมืองไทยและพลเมืองโลก', credit: 1 },
-                 { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปใน 5 กลุ่มสาระ (2)', credit: 2 } // Credit 2?
-             ],
-             yr3Sem2: [
-                 { courseCode: '01418332', courseNameTH: 'ความมั่นคงในระบบสารสนเทศ', credit: 3 },
-                 { courseCode: '01418371', courseNameTH: 'การบริหารโครงการและสตาร์ทอัพดิจิทัล', credit: 3 },
-                 { courseCode: '01418497', courseNameTH: 'สัมมนา', credit: 1 },
-                 { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (4)', credit: 6 }, // 6 หน่วยกิต อาจเป็น 2 วิชา?
-                 { courseCode: null, courseNameTH: 'วิชาเลือกเสรี (1)', credit: 3 }
-             ],
-             yr4Sem1: [{ courseCode: '01418490', courseNameTH: 'สหกิจศึกษา', credit: 6 }],
-             yr4Sem2: [
-                 { courseCode: '01418499', courseNameTH: 'โครงงานวิทยาการคอมพิวเตอร์', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (5)', credit: 3 },
-                 { courseCode: null, courseNameTH: 'วิชาเลือกเสรี (2)', credit: 3 }
-             ]
-         };
+        const curriculumTemplate = {
+            yr1Sem1: [
+                { courseCode: '01417111', courseNameTH: 'แคลคูลัส I', credit: 3 },
+                { courseCode: '01418111', courseNameTH: 'วิทยาการคอมพิวเตอร์เบื้องต้น', credit: 2 },
+                { courseCode: '01418112', courseNameTH: 'แนวคิดการโปรแกรมเบื้องต้น', credit: 3 },
+                { courseCode: '01418141', courseNameTH: 'ทรัพย์สินทางปัญญาและจรรยาบรรณวิชาชีพ', credit: 3 },
+                { courseCode: '01999111', courseNameTH: 'ศาสตร์แห่งแผ่นดิน', credit: 2 },
+                { courseCode: null, courseNameTH: 'วิชาภาษาไทย', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาภาษาต่างประเทศ 1 ภาษา (1)', credit: 3 }
+            ],
+            yr1Sem2: [
+                { courseCode: '01417322', courseNameTH: 'พีชคณิตเชิงเส้นเบื้องต้น', credit: 3 },
+                { courseCode: '01418113', courseNameTH: 'การโปรแกรมคอมพิวเตอร์', credit: 3 },
+                { courseCode: '01418131', courseNameTH: 'การโปรแกรมทางสถิติ', credit: 3 },
+                { courseCode: '01418132', courseNameTH: 'หลักมูลการคณนา', credit: 3 },
+                { courseCode: null, courseNameTH: 'กิจกรรมพลศึกษา', credit: 1 }, // ใช้ null ถ้าจะ map เป็น placeholder
+                { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปกลุ่มสาระศาสตร์แห่งผู้ประกอบการ', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปกลุ่มสาระสุนทรียศาสตร์', credit: 3 }
+            ],
+            yr2Sem1: [
+                { courseCode: '01418211', courseNameTH: 'การสร้างซอฟต์แวร์', credit: 3 },
+                { courseCode: '01418231', courseNameTH: 'โครงสร้างข้อมูลและขั้นตอนวิธี', credit: 3 },
+                { courseCode: '01418233', courseNameTH: 'สถาปัตยกรรมคอมพิวเตอร์', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (1)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาสารสนเทศ/คอมพิวเตอร์', credit: 1 }, // Credit 1?
+                { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปกลุ่มสาระอยู่ดีมีสุข', credit: 2 },
+                { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปใน 5 กลุ่มสาระ (1)', credit: 3 }
+            ],
+            yr2Sem2: [
+                { courseCode: '01418221', courseNameTH: 'ระบบฐานข้อมูลเบื้องต้น', credit: 3 },
+                { courseCode: '01418232', courseNameTH: 'การออกแบบและวิเคราะห์ขั้นตอนวิธี', credit: 3 },
+                { courseCode: '01418236', courseNameTH: 'ระบบปฏิบัติการ', credit: 3 },
+                { courseCode: '01418261', courseNameTH: 'หลักพื้นฐานของปัญญาประดิษฐ์', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (2)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาภาษาต่างประเทศ 1 ภาษา (2)', credit: 3 }
+            ],
+            yr3Sem1: [
+                { courseCode: '01418321', courseNameTH: 'การวิเคราะห์และการออกแบบระบบ', credit: 3 },
+                { courseCode: '01418331', courseNameTH: 'ทฤษฎีการคำนวณ', credit: 3 },
+                { courseCode: '01418351', courseNameTH: 'หลักการเครือข่ายคอมพิวเตอร์และการประมวลผลบนคลาวด์', credit: 3 },
+                { courseCode: '01418390', courseNameTH: 'การเตรียมความพร้อมสหกิจศึกษา', credit: 1 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (3)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาภาษาต่างประเทศ 1 ภาษา (3)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปกลุ่มสาระพลเมืองไทยและพลเมืองโลก', credit: 1 },
+                { courseCode: null, courseNameTH: 'วิชาศึกษาทั่วไปใน 5 กลุ่มสาระ (2)', credit: 2 } // Credit 2?
+            ],
+            yr3Sem2: [
+                { courseCode: '01418332', courseNameTH: 'ความมั่นคงในระบบสารสนเทศ', credit: 3 },
+                { courseCode: '01418371', courseNameTH: 'การบริหารโครงการและสตาร์ทอัพดิจิทัล', credit: 3 },
+                { courseCode: '01418497', courseNameTH: 'สัมมนา', credit: 1 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (4)', credit: 6 }, // 6 หน่วยกิต อาจเป็น 2 วิชา?
+                { courseCode: null, courseNameTH: 'วิชาเลือกเสรี (1)', credit: 3 }
+            ],
+            yr4Sem1: [{ courseCode: '01418490', courseNameTH: 'สหกิจศึกษา', credit: 6 }],
+            yr4Sem2: [
+                { courseCode: '01418499', courseNameTH: 'โครงงานวิทยาการคอมพิวเตอร์', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (5)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาเลือกเสรี (2)', credit: 3 }
+            ]
+        };
 
+        const templateCourseCodes = new Set<string>();
+        Object.values(curriculumTemplate)
+            .flat()
+            .forEach((course) => {
+                // วนลูปทุกวิชาใน template
+                if (course.courseCode) {
+                    templateCourseCodes.add(course.courseCode);
+                } else if (course.courseNameTH) {
+                    // หารหัส Placeholder และเพิ่มเข้าไปใน Set ถ้ามี
+                    const placeholderCode = getPlaceholderCourseCode(course.courseNameTH);
+                    if (placeholderCode) {
+                        templateCourseCodes.add(placeholderCode);
+                    }
+                }
+            });
 
         // ดึงข้อมูลเกรดของนักศึกษา
         const studentGradesResponse = await gradeService.getStudentGradesByStudentId(currentUser.studentID);
@@ -523,7 +598,7 @@ onMounted(async () => {
 
         // ฟังก์ชัน map ข้อมูล template กับ เกรดที่ดึงมา
         const mapSemesterData = (templateCourses: any[], studentGradesData: any[]): CourseDisplayData[] => {
-            return templateCourses.map(templateCourse => {
+            return templateCourses.map((templateCourse) => {
                 let foundGradeInfo = null;
                 let codeToSearch: string | null = null; // ตัวแปรเก็บรหัสที่จะใช้ค้นหา
 
@@ -540,7 +615,7 @@ onMounted(async () => {
                 // 2. ถ้ามีรหัสที่จะใช้ค้นหา (ไม่ว่าจะเป็นรหัสจริง หรือ placeholder)
                 if (codeToSearch) {
                     // ค้นหาข้อมูลเกรดใน fetchedGrades โดยใช้รหัสนี้
-                    foundGradeInfo = studentGradesData.find(g => g.courseCode === codeToSearch);
+                    foundGradeInfo = studentGradesData.find((g) => g.courseCode === codeToSearch);
                     // if (foundGradeInfo) {
                     //     console.log(`Found grade for ${codeToSearch}:`, foundGradeInfo);
                     // } else if(templateCourse.courseCode === null) {
@@ -573,6 +648,29 @@ onMounted(async () => {
         yr4Sem1.value = mapSemesterData(curriculumTemplate.yr4Sem1, fetchedGrades);
         yr4Sem2.value = mapSemesterData(curriculumTemplate.yr4Sem2, fetchedGrades);
 
+        const otherCoursesDataFromDB = fetchedGrades
+            .filter((grade: { courseCode: string }) => !templateCourseCodes.has(grade.courseCode)) // 2. เอาเฉพาะที่ *ไม่มี* ใน template codes
+            .map((grade: { courseNameTH: string; courseCode: any; credit: any; grade: any }): CourseDisplayData => {
+                // 3. แปลงเป็น CourseDisplayData
+                // *** ข้อควรระวัง: การจัดการ courseNameTH และ credit สำหรับ Other Courses ***
+                // ถ้า API ไม่ได้คืน courseNameTH และ credit มาด้วย ต้องหาวิธีจัดการ
+                // วิธีที่ดีที่สุด: ปรับ API ให้คืนข้อมูลเหล่านี้มาด้วย
+                // วิธีแก้ปัญหาเฉพาะหน้า (ถ้า API แก้ไม่ได้):
+                const courseName = grade.courseNameTH || `(รหัส: ${grade.courseCode})`; // ใช้ชื่อจาก DB ถ้ามี, หรือแสดงรหัสแทน
+                // const creditValue = grade.credit ?? 0; // ใช้หน่วยกิตจาก grade service ถ้ามี, หรือ 0 (ผู้ใช้อาจต้องแก้เอง แต่ช่อง disable ไปแล้ว?) -> ควรให้ API ส่งมา
+
+                return {
+                    courseCode: grade.courseCode,
+                    courseNameTH: courseName,
+                    // credit: creditValue, // ใช้หน่วยกิตที่ถูกต้องจาก API
+                    credit: grade.credit, // สมมติว่า grade object มี credit อยู่แล้ว
+                    grade: grade.grade || null,
+                    isModified: false, // เพิ่งโหลดมา ยังไม่แก้ไข
+                    wasInitiallyNull: false // มีข้อมูลใน DB แล้ว = false
+                };
+            });
+
+        otherCourses.value = otherCoursesDataFromDB; // กำหนดค่าให้กับ Ref
     } catch (error: any) {
         console.error('เกิดข้อผิดพลาดในการโหลดข้อมูล:', error.response?.data || error.message || error);
         errorMessage.value = 'เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + (error.response?.data?.message || error.message || 'ไม่ทราบสาเหตุ');
@@ -580,7 +678,6 @@ onMounted(async () => {
         isLoading.value = false; // สิ้นสุด loading
     }
 });
-
 </script>
 <template>
     <h2 class="text-primary">บันทึกแผนการเรียน</h2>
@@ -632,6 +729,51 @@ onMounted(async () => {
                     <div>จำนวนหน่วยกิตภาคการศึกษานี้: {{ calculateSemesterCredits(semesterData.courses) }}</div>
                     <div>เกรดเฉลี่ยภาคการศึกษานี้: {{ calculateSemesterGPA(semesterData.courses).toFixed(2) }}</div>
                 </div>
+            </Fieldset>
+        </div>
+
+        <div class="card">
+            <Fieldset legend="วิชาอื่นๆ" :toggleable="true">
+                <DataTable :value="otherCourses" tableStyle="min-width: 50rem" dataKey="courseCode" :rowClass="getRowClass">
+                    <Column field="courseCode" header="รหัสวิชา" style="width: 15%">
+                        <template #body="slotProps">
+                            <InputText v-model="slotProps.data.courseCode" placeholder="รหัสวิชา" @input="courseDataChanged(slotProps.data)" :disabled="!slotProps.data.wasInitiallyNull" />
+                        </template>
+                    </Column>
+                    <Column field="courseNameTH" header="ชื่อวิชา" style="width: 25%">
+                        <template #body="slotProps">
+                            <InputText v-model="slotProps.data.courseNameTH" placeholder="ชื่อวิชา" @input="courseDataChanged(slotProps.data)" style="width: 100%" :disabled="!slotProps.data.wasInitiallyNull" />
+                        </template>
+                    </Column>
+                    <Column field="grade" header="เกรดวิชา" style="width: 20%">
+                        <template #body="slotProps">
+                            <Select v-model="slotProps.data.grade" :options="gradeOptions" placeholder="เลือกเกรด" style="width: 80px" appendTo="body" @change="courseGradeChanged(slotProps.data)" />
+                        </template>
+                    </Column>
+                    <Column field="credit" header="จำนวนหน่วยกิต" style="width: 15%">
+                        <template #body="slotProps">
+                            <InputNumber v-model="slotProps.data.credit" placeholder="หน่วยกิต" @input="courseDataChanged(slotProps.data)" :min="0" :max="10" :disabled="!slotProps.data.wasInitiallyNull" />
+                        </template>
+                    </Column>
+                    <Column field="gradePoint" header="แต้มคะแนน" style="width: 15%">
+                        <template #body="slotProps">
+                            {{ calculateGradePoint(slotProps.data.grade, slotProps.data.credit) }}
+                        </template>
+                    </Column>
+                    <Column style="width: 10%">
+                        <template #body="slotProps">
+                            <div class="flex items-center space-x-2">
+                                <Button icon="pi pi-save" outlined severity="success" @click="saveGrade(slotProps.data)" :disabled="!slotProps.data.isModified" />
+                                <Button v-if="slotProps.data.wasInitiallyNull" icon="pi pi-trash" outlined severity="danger" @click="removeOtherCourse(slotProps.data)" class="ml-2" />
+                            </div>
+                        </template>
+                    </Column>
+                </DataTable>
+                <div class="semester-summary">
+                    <div>จำนวนหน่วยกิตวิชาอื่นๆ: {{ calculateSemesterCredits(otherCourses) }}</div>
+                    <div>เกรดเฉลี่ยวิชาอื่นๆ: {{ calculateSemesterGPA(otherCourses).toFixed(2) }}</div>
+                </div>
+                <Button label="เพิ่มวิชาใหม่" icon="pi pi-plus" @click="addNewOtherCourse" class="mt-3" />
             </Fieldset>
         </div>
     </div>

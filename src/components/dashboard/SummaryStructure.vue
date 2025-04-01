@@ -189,18 +189,18 @@ onMounted(fetchStudentGradesAndCalculateCredits);
     <div v-else>
       <div class="mb-4 p-4 bg-gray-50 rounded-md">
         <div class="flex justify-between">
-          <div>
+          <!-- <div>
             <div class="font-medium text-gray-600">ชื่อ-นามสกุล:</div>
             <div class="font-bold" v-if="studentGrades">
               {{ studentGrades.firstName }} {{ studentGrades.lastName }}
             </div>
-          </div>
-          <div>
+          </div> -->
+          <!-- <div>
             <div class="font-medium text-gray-600">รหัสนิสิต:</div>
             <div class="font-bold" v-if="studentGrades">
               {{ studentGrades.studentID }}
             </div>
-          </div>
+          </div> -->
           <div>
             <div class="font-medium text-gray-600">เกรดเฉลี่ยสะสม:</div>
             <div class="font-bold text-primary">{{ gpaInfo.gpa }}</div>
