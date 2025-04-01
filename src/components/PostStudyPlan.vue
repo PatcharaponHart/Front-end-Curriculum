@@ -230,6 +230,7 @@ const getPlaceholderCourseCode = (courseNameTH: string): string | null => {
         'วิชาเฉพาะเลือก (3)': '14450003',
         'วิชาเฉพาะเลือก (4)': '14450004',
         'วิชาเฉพาะเลือก (5)': '14450005',
+        'วิชาเฉพาะเลือก (6)': '14450006',
         'วิชาเลือกเสรี (1)': '00001111',
         'วิชาเลือกเสรี (2)': '00001112'
         // เพิ่มเติม: ตรวจสอบวิชาอื่นๆ ใน template ที่ courseCode เป็น null และเพิ่ม mapping ที่นี่
@@ -586,13 +587,14 @@ onMounted(async () => {
                 { courseCode: '01418332', courseNameTH: 'ความมั่นคงในระบบสารสนเทศ', credit: 3 },
                 { courseCode: '01418371', courseNameTH: 'การบริหารโครงการและสตาร์ทอัพดิจิทัล', credit: 3 },
                 { courseCode: '01418497', courseNameTH: 'สัมมนา', credit: 1 },
-                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (4)', credit: 6 }, // 6 หน่วยกิต อาจเป็น 2 วิชา?
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (4)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (5)', credit: 3 },
                 { courseCode: null, courseNameTH: 'วิชาเลือกเสรี (1)', credit: 3 }
             ],
             yr4Sem1: [{ courseCode: '01418490', courseNameTH: 'สหกิจศึกษา', credit: 6 }],
             yr4Sem2: [
                 { courseCode: '01418499', courseNameTH: 'โครงงานวิทยาการคอมพิวเตอร์', credit: 3 },
-                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (5)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (6)', credit: 3 },
                 { courseCode: null, courseNameTH: 'วิชาเลือกเสรี (2)', credit: 3 }
             ]
         };
@@ -701,7 +703,7 @@ onMounted(async () => {
 });
 </script>
 <template>
-    <h2 class="text-primary">บันทึกแผนการเรียน</h2>
+    <h2 class="text-primary">บันทึกผลการเรียน</h2>
 
     <div v-if="isLoading" class="loading">กำลังโหลดข้อมูล...</div>
     <div v-else-if="errorMessage" class="error-message">{{ errorMessage }}</div>
