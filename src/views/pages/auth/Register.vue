@@ -111,7 +111,7 @@ const sectionOptions = ref([
 ]);
 
 const onRegister = async () => {
-    if (!username.value || !studentID.value || !firstName.value || !lastName.value || !password.value || !confirmPassword.value) {
+    if (!username.value || !studentID.value || !section.value || !firstName.value || !lastName.value || !password.value || !confirmPassword.value) {
         toast.add({ severity: 'warn', summary: 'ข้อมูลไม่ครบ', detail: 'กรุณากรอกข้อมูลให้ครบ', life: 3000 });
         return;
     }
@@ -141,12 +141,15 @@ const onRegister = async () => {
                     section: section.value,
                     username: username.value,
                     password: password.value
-                    // section: 'YourSectionValue' // อย่าลืมจัดการ section ถ้าจำเป็น
                 };
 
-                const result = await studentService.registerStudent(registrationData);
-                console.log('Registration Result:', result);
-                toast.add({ severity: 'success', summary: 'สำเร็จ', detail: result || 'ลงทะเบียนผู้ใช้สำเร็จ!', life: 3000 });
+                await studentService.registerStudent(registrationData);
+
+                // toast.add({ severity: 'success', summary: 'สำเร็จ', detail: result || 'ลงทะเบียนผู้ใช้สำเร็จ!', life: 3000 });
+
+                sessionStorage.setItem('showLoginSuccessToast', 'true');
+                console.log('Session storage set');
+
                 router.push({ name: 'login' });
             } catch (error: any) {
                 console.error('Registration Error:', error);
@@ -189,7 +192,7 @@ const onRegister = async () => {
 </script>
 
 <style scoped>
-.bg-white{
-    background: rgb(194, 243, 190); 
+.bg-white {
+    background: rgb(194, 243, 190);
 }
 </style>

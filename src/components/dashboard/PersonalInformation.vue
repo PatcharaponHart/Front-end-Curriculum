@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import studentService, { Student } from '@/service/studentService';
 import { getCurrentUser } from '@/service/authService';
+import studentService, { Student } from '@/service/studentService';
+import { onMounted, ref } from 'vue';
 
 const student = ref<Student | null>(null);
 const isLoading = ref(true);
@@ -33,16 +33,23 @@ onMounted(fetchStudentData);
         <div v-if="isLoading" class="loading">กำลังโหลดข้อมูล...</div>
         <div v-else-if="errorMessage" class="error">{{ errorMessage }}</div>
         <div v-else-if="student" class="student-info">
-            <p><strong class="text-primary">ชื่อ:</strong> {{ student.firstName }}</p>
-            <p><strong class="text-primary">นามสกุล:</strong> {{ student.lastName }}</p>
-            <p><strong class="text-primary">รหัสนิสิต:</strong> {{ student.studentID }}</p>
-            <p><strong class="text-primary">หมู่เรียน:</strong> {{ student.section }}</p>
+            <p>
+                <strong class="text-primary">ชื่อ:</strong> <strong>{{ student.firstName }}</strong>
+            </p>
+            <p>
+                <strong class="text-primary">นามสกุล:</strong> <strong>{{ student.lastName }}</strong>
+            </p>
+            <p>
+                <strong class="text-primary">รหัสนิสิต:</strong> <strong>{{ student.studentID }}</strong>
+            </p>
+            <p>
+                <strong class="text-primary">หมู่เรียน:</strong> <strong>{{ student.section }}</strong>
+            </p>
         </div>
     </div>
 </template>
 
 <style scoped>
-
 .h2 {
     font-size: 20px;
     font-weight: bold;
@@ -53,6 +60,7 @@ onMounted(fetchStudentData);
     margin: 10px 0;
     padding: 5px 0;
     border-bottom: 1px solid #eee;
+    font-size: 16px;
 }
 
 .loading {
@@ -69,6 +77,6 @@ onMounted(fetchStudentData);
 }
 
 strong {
-    margin-right: 10px;
+    margin-right: 8px;
 }
 </style>

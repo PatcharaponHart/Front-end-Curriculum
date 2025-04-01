@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import gradeService, { StudentGradesSummaryDto } from '@/service/gradeService';
 import { getCurrentUser } from '@/service/authService';
+import gradeService, { StudentGradesSummaryDto } from '@/service/gradeService';
+import { onMounted, ref } from 'vue';
 
 const studentCredits = ref<StudentGradesSummaryDto | null>(null);
 const isLoading = ref(true);
@@ -33,8 +33,12 @@ onMounted(fetchStudentCredits);
         <div v-if="isLoading" class="loading">กำลังโหลดข้อมูล...</div>
         <div v-else-if="errorMessage" class="error">{{ errorMessage }}</div>
         <div v-else-if="studentCredits" class="credits-info">
-            <p><strong class="text-primary">หน่วยกิตทั้งหมด:</strong> {{ studentCredits.totalCredits }}</p>
-            <p><strong class="text-primary">จำนวนวิชาทั้งหมด:</strong> {{ studentCredits.grades.length }}</p>
+            <p>
+                <strong class="text-primary">หน่วยกิตทั้งหมด:</strong> <strong>{{ studentCredits.totalCredits }}</strong>
+            </p>
+            <p>
+                <strong class="text-primary">จำนวนวิชาทั้งหมด:</strong> <strong>{{ studentCredits.grades.length }}</strong>
+            </p>
         </div>
     </div>
 </template>
@@ -50,6 +54,7 @@ onMounted(fetchStudentCredits);
     margin: 10px 0;
     padding: 5px 0;
     border-bottom: 1px solid #eee;
+    font-size: 16px;
 }
 
 .loading {
@@ -66,6 +71,6 @@ onMounted(fetchStudentCredits);
 }
 
 strong {
-    margin-right: 10px;
+    margin-right: 8px;
 }
 </style>

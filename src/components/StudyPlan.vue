@@ -8,8 +8,7 @@ import DataTable from 'primevue/datatable';
 import Fieldset from 'primevue/fieldset';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
-
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 // Interface PlannedCourseData เหมือนเดิม
 interface PlannedCourseData {
     courseCode: string | null;
@@ -190,81 +189,39 @@ const clearSelections = () => {
     });
 };
 
-// const savePlan = async () => {
-//     if (isSaving.value) return;
+watch(
+    allSemesters,
+    () => {
+        // ใช้ nextTick เพื่อรอให้การอัปเดต state เบื้องต้นเสร็จก่อน
+        // ป้องกันกรณีที่ watcher ทำงานก่อนที่ v-model จะอัปเดตเสร็จสมบูรณ์
+        nextTick(() => {
+            // console.log('Watcher: Checking course states after change...');
+            let correctionApplied = false;
 
-//     // เคลียร์ข้อความเก่า
-//     errorMessage.value = null;
-//     successMessage.value = null;
+            // วนลูปตรวจสอบทุกวิชาในแผน
+            allSemesters.value.forEach((semester) => {
+                semester.courses.forEach((course) => {
+                    // ตรวจสอบว่า prerequisite ของวิชานี้ผ่านหรือไม่
+                    const prerequisitesAreCurrentlyMet = arePrerequisitesMet(course);
 
-//     try {
-//         const currentUser = getCurrentUser();
-//         if (!currentUser?.studentID) {
-//             errorMessage.value = 'ไม่พบรหัสนักศึกษา';
-//             return;
-//         }
-//         isSaving.value = true; // เริ่มสถานะ saving (จำลอง)
+                    // *** เงื่อนไขสำคัญ ***
+                    // ถ้า prerequisite ไม่ผ่าน แต่ isSelected ยังเป็น true อยู่
+                    if (!prerequisitesAreCurrentlyMet && course.isSelected) {
+                        console.warn(`Watcher: Correcting "${course.courseNameTH}". Prerequisites not met but was selected. Forcing isSelected = false.`);
+                        // บังคับให้ isSelected เป็น false
+                        course.isSelected = false;
+                        correctionApplied = true;
+                    }
+                });
+            });
 
-//         const selectedCoursesPayload: { studentId: string; courseCode: string; credit: number }[] = [];
-//         const skippedCourses: { name: string; reason: string }[] = [];
-
-//         allSemesters.value.forEach((semester) => {
-//             semester.courses.forEach((course) => {
-//                 if (course.isSelected) {
-//                     let effectiveCourseCode = course.courseCode;
-//                     if (!effectiveCourseCode && course.courseNameTH) {
-//                         effectiveCourseCode = getPlaceholderCourseCode(course.courseNameTH);
-//                     }
-
-//                     if (!effectiveCourseCode) {
-//                         console.warn(`Skipping selected course "${course.courseNameTH}" due to missing/unmappable code.`);
-//                         skippedCourses.push({ name: course.courseNameTH, reason: 'ไม่พบรหัสวิชา' });
-//                     } else {
-//                         selectedCoursesPayload.push({
-//                             studentId: currentUser.studentID,
-//                             courseCode: effectiveCourseCode,
-//                             credit: course.credit
-//                         });
-//                     }
-//                 }
-//             });
-//         });
-
-//         if (selectedCoursesPayload.length === 0 && skippedCourses.length === 0) {
-//             console.log('No courses selected to save.');
-//             errorMessage.value = 'กรุณาเลือกรายวิชาที่ต้องการวางแผน';
-//             isSaving.value = false;
-//             return;
-//         }
-
-//         // --- ส่วนที่ตัดการเชื่อมต่อ API ออก ---
-//         console.log('--- Simulating Save Plan ---');
-//         console.log('Selected Courses Payload:', selectedCoursesPayload);
-//         console.log('Skipped Courses:', skippedCourses);
-//         // await planService.savePlan(selectedCoursesPayload); // *** ตัดการเรียก API ออก ***
-
-//         // แสดงข้อความจำลองว่าสำเร็จ (หรือมีบางส่วนที่ข้ามไป)
-//         if (skippedCourses.length > 0) {
-//             successMessage.value = `จำลองการบันทึกสำเร็จ ${selectedCoursesPayload.length} รายการ (มี ${skippedCourses.length} รายการที่ข้ามเนื่องจากไม่มีรหัสวิชา)`;
-//         } else if (selectedCoursesPayload.length > 0) {
-//             successMessage.value = `จำลองการบันทึกแผน ${selectedCoursesPayload.length} รายการ สำเร็จ!`;
-//         } else {
-//             // กรณีเลือกแต่วิชาที่ข้าม
-//             errorMessage.value = `ไม่สามารถจำลองการบันทึกได้ มี ${skippedCourses.length} รายการที่ไม่พบรหัสวิชา`;
-//         }
-
-//         // *** จบส่วนที่ตัดการเชื่อมต่อ API ออก ***
-//     } catch (error: any) {
-//         // Error ที่อาจเกิดขึ้นนอกเหนือจาก API call (ไม่น่าเกิดในกรณีนี้)
-//         console.error('Unexpected error during save plan simulation:', error);
-//         errorMessage.value = 'เกิดข้อผิดพลาดที่ไม่คาดคิด';
-//     } finally {
-//         // หน่วงเวลาเล็กน้อยเพื่อให้เห็นสถานะ Loading ก่อนหายไป (ถ้าต้องการ)
-//         setTimeout(() => {
-//             isSaving.value = false;
-//         }, 300); // 300ms delay example
-//     }
-// };
+            // if (correctionApplied) {
+            //     console.log("Watcher: Corrections applied.");
+            // }
+        });
+    },
+    { deep: true }
+);
 
 // --- โหลดข้อมูลเมื่อเริ่มต้นคอมโพเนนต์ (ปรับปรุง) ---
 onMounted(async () => {
@@ -331,28 +288,19 @@ onMounted(async () => {
                 { courseCode: '01418332', courseNameTH: 'ความมั่นคงในระบบสารสนเทศ', credit: 3, prerequisites: ['01418236'] },
                 { courseCode: '01418371', courseNameTH: 'การบริหารโครงการและสตาร์ทอัพดิจิทัล', credit: 3, prerequisites: ['01418221'] },
                 { courseCode: '01418497', courseNameTH: 'สัมมนา', credit: 1 },
-                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (4)', credit: 6 }, // 6 หน่วยกิต อาจเป็น 2 วิชา?
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (4)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (5)', credit: 3 },
                 { courseCode: null, courseNameTH: 'วิชาเลือกเสรี (1)', credit: 3 }
             ],
             yr4Sem1: [{ courseCode: '01418490', courseNameTH: 'สหกิจศึกษา', credit: 6, prerequisites: ['01418390'] }],
             yr4Sem2: [
                 { courseCode: '01418499', courseNameTH: 'โครงงานวิทยาการคอมพิวเตอร์', credit: 3, prerequisites: ['01418321'] },
-                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (5)', credit: 3 },
+                { courseCode: null, courseNameTH: 'วิชาเฉพาะเลือก (6)', credit: 3 },
                 { courseCode: null, courseNameTH: 'วิชาเลือกเสรี (2)', credit: 3 }
             ]
         };
 
-        // --- ส่วนที่ตัดการเชื่อมต่อ API ออก ---
-        // ไม่ต้องดึงข้อมูลแผนปัจจุบันจาก API
         const plannedCourseCodes: string[] = []; // กำหนดเป็น Array ว่างเสมอ
-        // try {
-        //      const planResponse = await planService.getCurrentPlan(currentUser.studentID);
-        //      plannedCourseCodes = planResponse?.plannedCourses?.map((p: any) => p.courseCode) ?? [];
-        //      console.log("Loaded planned course codes:", plannedCourseCodes);
-        // } catch (loadPlanError) {
-        //     console.warn("Could not load existing plan, starting fresh:", loadPlanError);
-        // }
-        // --- จบส่วนที่ตัดการเชื่อมต่อ API ออก ---
 
         // ฟังก์ชัน map ข้อมูล template (เหมือนเดิม แต่ plannedCourseCodes จะเป็น [] เสมอ)
         const mapSemesterData = (templateCourses: any[], currentPlanCodes: string[]): PlannedCourseData[] => {

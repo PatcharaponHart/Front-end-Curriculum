@@ -49,7 +49,7 @@
 import { login } from '@/service/authService'; // service login mock
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -58,6 +58,24 @@ const password = ref('');
 const checked = ref(false);
 const loading = ref(false);
 const toast = useToast();
+
+onMounted(() => {
+    // ตรวจสอบค่าจาก sessionStorage ที่ตั้งไว้ในหน้า Register
+    const shouldShowToast = sessionStorage.getItem('showLoginSuccessToast');
+
+    if (shouldShowToast === 'true') {
+        // ถ้ามีค่า 'true', แสดง Toast การลงทะเบียนสำเร็จ
+        toast.add({
+            severity: 'success',
+            summary: 'สำเร็จ',
+            detail: 'ลงทะเบียนสำเร็จ', // ข้อความแจ้งว่าลงทะเบียนสำเร็จ
+            life: 3000
+        });
+
+        // ลบค่าออกจาก sessionStorage ทันที เพื่อไม่ให้แสดงซ้ำ
+        sessionStorage.removeItem('showLoginSuccessToast');
+    }
+});
 
 const onLogin = async () => {
     if (!username.value || !password.value) {
@@ -112,7 +130,7 @@ button {
 }
 
 .bg-white {
-    background: rgb(194, 243, 190); 
+    background: rgb(194, 243, 190);
 }
 
 .bg-blue-500 {

@@ -4,6 +4,9 @@ import gradeService, { Grades } from '@/service/gradeService'; // ตรวจ�
 import Button from 'primevue/button'; // จำเป็นถ้าใช้ Button ใน template ที่ไม่ได้แสดง
 // import Dropdown from 'primevue/dropdown'; // ถ้าใช้ Dropdown ใน template
 import Select from 'primevue/select'; // ถ้าใช้ Select ใน template
+import Toast from 'primevue/toast';
+import { useConfirm } from 'primevue/useconfirm';
+import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 
 // --- Interface สำหรับข้อมูล Course ---
@@ -32,8 +35,32 @@ const isSaving = ref(false);
 const errorMessage = ref<string | null>(null);
 const expandedRows = ref([]); // หากใช้ DataTable ที่มี expand ใน template
 
+const confirm = useConfirm();
+const toast = useToast(); // เพิ่มบรรทัดนี้
+
 // --- ตัวเลือกเกรด ---
 const gradeOptions = ref(['A', 'B+', 'B', 'C+', 'C', 'D+', 'D']);
+
+const limitInputLength = (event: KeyboardEvent, maxLength: number) => {
+    const target = event.target as HTMLInputElement;
+    const value = target.value || '';
+
+    // อนุญาตปุ่มที่ไม่ใช่ตัวเลข/ตัวอักษร เช่น Backspace, Delete, Arrow keys, Tab, Enter, Home, End
+    if (
+        ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Home', 'End'].includes(event.key) ||
+        // อนุญาต Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+        (event.ctrlKey && ['a', 'c', 'v', 'x'].includes(event.key.toLowerCase())) ||
+        // อนุญาต Cmd+A (สำหรับ Mac)
+        (event.metaKey && event.key.toLowerCase() === 'a')
+    ) {
+        return; // ไม่ต้องทำอะไร อนุญาตให้กดได้
+    }
+
+    // ถ้าความยาวถึง maxLength แล้ว และไม่ได้เลือกข้อความไว้ และปุ่มที่กดเป็นตัวเลข
+    if (value.length >= maxLength && target.selectionStart === target.selectionEnd && /\d/.test(event.key)) {
+        event.preventDefault(); // ป้องกันการพิมพ์เพิ่ม
+    }
+};
 
 // --- รวมภาคการศึกษาทั้งหมด (Computed) ---
 const allSemesters = computed(() => [
@@ -213,17 +240,17 @@ const getPlaceholderCourseCode = (courseNameTH: string): string | null => {
     // *** กรุณาปรับแก้ Placeholder Codes ให้ตรงกับที่ Backend คาดหวัง ***
     // ใช้ 'XXXX' หรือ '0000' หรือรหัสเฉพาะอื่นๆ
     const mappings: { [key: string]: string } = {
-        'วิชาภาษาไทย': '12230000',
+        วิชาภาษาไทย: '12230000',
         'วิชาภาษาต่างประเทศ 1 ภาษา (1)': '12240001',
         'วิชาภาษาต่างประเทศ 1 ภาษา (2)': '12240002',
         'วิชาภาษาต่างประเทศ 1 ภาษา (3)': '12240003',
-        'กิจกรรมพลศึกษา': '01175xxx',
-        'วิชาศึกษาทั่วไปกลุ่มสาระศาสตร์แห่งผู้ประกอบการ': '01310000',
-        'วิชาศึกษาทั่วไปกลุ่มสาระสุนทรียศาสตร์': '01320000',
-        'วิชาศึกษาทั่วไปกลุ่มสาระอยู่ดีมีสุข': '01330000',
+        กิจกรรมพลศึกษา: '01175xxx',
+        วิชาศึกษาทั่วไปกลุ่มสาระศาสตร์แห่งผู้ประกอบการ: '01310000',
+        วิชาศึกษาทั่วไปกลุ่มสาระสุนทรียศาสตร์: '01320000',
+        วิชาศึกษาทั่วไปกลุ่มสาระอยู่ดีมีสุข: '01330000',
         'วิชาศึกษาทั่วไปใน 5 กลุ่มสาระ (1)': '01340001',
         'วิชาศึกษาทั่วไปใน 5 กลุ่มสาระ (2)': '01340002',
-        'วิชาศึกษาทั่วไปกลุ่มสาระพลเมืองไทยและพลเมืองโลก': '01350000',
+        วิชาศึกษาทั่วไปกลุ่มสาระพลเมืองไทยและพลเมืองโลก: '01350000',
         'วิชาสารสนเทศ/คอมพิวเตอร์': '01418000',
         'วิชาเฉพาะเลือก (1)': '14450001',
         'วิชาเฉพาะเลือก (2)': '14450002',
@@ -256,7 +283,7 @@ const addNewOtherCourse = () => {
         courseCode: '',
         courseNameTH: '',
         grade: '',
-        credit: 0,
+        credit: 1,
         isModified: true,
         wasInitiallyNull: true
     });
@@ -271,256 +298,370 @@ const removeOtherCourse = (course: CourseDisplayData) => {
 
 // บันทึกเกรดของรายวิชาเดียว
 const saveGrade = async (course: CourseDisplayData) => {
+    console.log('--- saveGrade ENTERED ---', new Date().toISOString(), course.courseCode); // เพิ่ม Log เช็ค
     // ป้องกันการกดซ้ำซ้อนขณะกำลังบันทึก
-    if (isSaving.value) return;
-
-    try {
-        const currentUser = getCurrentUser();
-        if (!currentUser?.studentID) {
-            errorMessage.value = 'ไม่พบรหัสนักศึกษา';
-            return;
-        }
-        isSaving.value = true; // เริ่มบันทึก
-        errorMessage.value = null;
-
-        // --- กำหนด Course Code ---
-        let effectiveCourseCode = course.courseCode;
-        if (!effectiveCourseCode && course.courseNameTH) {
-            effectiveCourseCode = getPlaceholderCourseCode(course.courseNameTH);
-        }
-
-        if (!effectiveCourseCode) {
-            console.warn(`Save cancelled: Missing or unmappable course code for "${course.courseNameTH}".`);
-            errorMessage.value = `ไม่สามารถบันทึกได้: ไม่พบรหัสวิชาที่ถูกต้องสำหรับ "${course.courseNameTH}"`;
-            isSaving.value = false; // หยุดสถานะ loading
-            return; // ไม่ดำเนินการต่อ
-        }
-        // --- สิ้นสุดกำหนด Course Code ---
-
-        const payload: Grades = {
-            studentId: currentUser.studentID,
-            courseCode: effectiveCourseCode,
-            grade: course.grade || '', // ส่งค่าว่างถ้าเป็น null
-            credit: course.credit
-        };
-
-        let apiCalled = false;
-        if (course.wasInitiallyNull && course.grade) {
-            console.log('Calling PushGrade...', payload);
-            await gradeService.pushGrade(payload);
-            course.wasInitiallyNull = false; // อัปเดตสถานะว่ามีข้อมูลแล้ว
-            apiCalled = true;
-        } else if (!course.wasInitiallyNull && course.isModified) {
-            // ถ้าตอนแรกมีข้อมูล และมีการแก้ไข (ไม่ว่าจะแก้เป็นเกรดอะไร หรือลบเกรด)
-            console.log('Calling EditGrade...', payload);
-            await gradeService.editGrade(payload);
-            apiCalled = true;
-        } else if (course.wasInitiallyNull && !course.grade) {
-            // ตอนแรก null, แก้ไข แต่ก็ยังเป็น null -> ไม่ต้องทำอะไร ไม่ถือว่ามีการเปลี่ยนแปลงข้อมูล
-            console.log('Skipping save (was initially null, still null/empty)');
-            // ควรเคลียร์ isModified ด้วย เพราะถือว่าไม่มีการเปลี่ยนแปลงที่ต้องบันทึก
-            course.isModified = false;
-        } else {
-            // ไม่ได้แก้ไข หรือกรณีอื่นๆ ที่ไม่ต้องเรียก API
-            console.log('Skipping save (not modified or other case)');
-        }
-
-        // เคลียร์ isModified ถ้า API ถูกเรียกและสำเร็จ
-        if (apiCalled) {
-            course.isModified = false;
-            console.log('Save operation completed for', effectiveCourseCode);
-            // อาจจะแสดง Toast แจ้งสำเร็จสำหรับรายการนี้
-        }
-    } catch (error: any) {
-        console.error('Error saving grade:', error.response?.data || error.message || error);
-        const backendError = error.response?.data?.title || error.response?.data?.message || error.message;
-        errorMessage.value = `เกิดข้อผิดพลาดในการบันทึกเกรดวิชา ${course.courseNameTH}: ` + (backendError || 'ไม่ทราบสาเหตุ');
-        // แสดง Toast Error
-    } finally {
-        isSaving.value = false; // สิ้นสุดการบันทึก (ไม่ว่าจะสำเร็จหรือล้มเหลว)
+    if (isSaving.value) {
+        console.log('saveGrade: Already saving, returning.');
+        return;
     }
+
+    // --- กำหนด Course Code (ทำก่อนเพื่อใช้ใน message) ---
+    let effectiveCourseCode = course.courseCode;
+    if (!effectiveCourseCode && course.courseNameTH) {
+        effectiveCourseCode = getPlaceholderCourseCode(course.courseNameTH);
+    }
+
+    if (!effectiveCourseCode) {
+        // ไม่ควรเกิดถ้า UI validation ดีพอ แต่กันไว้
+        errorMessage.value = `ไม่สามารถบันทึกได้: ไม่พบรหัสวิชาสำหรับ "${course.courseNameTH}"`;
+        console.error('saveGrade: Cannot proceed without effectiveCourseCode for', course.courseNameTH);
+        return;
+    }
+    // --- สิ้นสุดกำหนด Course Code ---
+
+    // *** สร้างข้อความยืนยันแบบไดนามิก ***
+    const gradeToDisplay = course.grade || 'ค่าว่าง (ลบเกรด)'; // แสดงผลถ้าเกรดเป็น null/empty
+    const confirmationMessage = `คุณต้องการบันทึกเกรด '${gradeToDisplay}' สำหรับวิชา ${effectiveCourseCode} - ${course.courseNameTH} หรือไม่?`;
+
+    confirm.require({
+        message: confirmationMessage, // <--- ใช้ข้อความที่สร้างขึ้น
+        header: 'ยืนยันการบันทึกรายการเดียว',
+        icon: 'pi pi-question-circle', // เปลี่ยนไอคอนตามความเหมาะสม
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-success',
+        acceptLabel: 'บันทึก', // แก้ Label ให้ชัดเจน
+        rejectLabel: 'ยกเลิก',
+        accept: async () => {
+            console.log('saveGrade: Accepted confirmation for', effectiveCourseCode);
+            try {
+                const currentUser = getCurrentUser();
+                if (!currentUser?.studentID) {
+                    errorMessage.value = 'ไม่พบรหัสนักศึกษา';
+                    return;
+                }
+                isSaving.value = true;
+                errorMessage.value = null;
+
+                // effectiveCourseCode คำนวณไว้แล้วด้านบน
+                const payload: Grades = {
+                    studentId: currentUser.studentID,
+                    courseCode: effectiveCourseCode!, // ใช้ ! เพราะเช็คแล้วว่าไม่ null
+                    grade: course.grade || '',
+                    credit: course.credit
+                };
+
+                let apiCalled = false;
+                // ... (ตรรกะการเรียก pushGrade/editGrade เหมือนเดิม) ...
+                if (course.wasInitiallyNull && course.grade) {
+                    console.log('Calling PushGrade...', payload);
+                    await gradeService.pushGrade(payload);
+                    course.wasInitiallyNull = false;
+                    apiCalled = true;
+                } else if (!course.wasInitiallyNull && course.isModified) {
+                    console.log('Calling EditGrade...', payload);
+                    await gradeService.editGrade(payload);
+                    apiCalled = true;
+                } else if (course.wasInitiallyNull && !course.grade && course.isModified) {
+                    // เพิ่ม isModified เช็คด้วย
+                    console.log('Skipping save (was initially null, still null/empty)');
+                    // ถ้าตอนแรก Null, แก้แล้วแต่ยัง Null -> ไม่ต้องเรียก API แต่เคลียร์ Flag ได้
+                    course.isModified = false; // เคลียร์ flag เพราะ user action เสร็จแล้ว แต่ไม่มีไรส่ง
+                } else {
+                    console.log('Skipping save (not modified or other case)');
+                    // ถ้าไม่เข้าเงื่อนไขอื่น และไม่ modified ก็ไม่ต้องทำไร
+                    // ถ้า modified แต่เข้าเงื่อนไขอื่นไม่ได้ แปลว่า logic ผิดพลาด ควร log ไว้
+                    if (course.isModified) {
+                        console.warn("Course marked as modified but didn't match save conditions:", course);
+                    }
+                }
+
+                if (apiCalled) {
+                    course.isModified = false; // เคลียร์หลัง API สำเร็จเท่านั้น
+                    console.log('Save operation completed for', effectiveCourseCode);
+                    // Toast แจ้งสำเร็จรายการเดียว
+                    toast.add({
+                        severity: 'success',
+                        summary: 'บันทึกสำเร็จ',
+                        detail: `บันทึกเกรดสำหรับวิชา ${course.courseNameTH || effectiveCourseCode} เรียบร้อยแล้ว`,
+                        life: 3000 // แสดงผล 3 วินาที
+                    });
+                }
+            } catch (error: any) {
+                console.error('Error saving grade:', error.response?.data || error.message || error);
+                const backendError = error.response?.data?.title || error.response?.data?.message || error.message;
+                const errorDetail = `เกิดข้อผิดพลาดในการบันทึกเกรดวิชา ${course.courseNameTH || effectiveCourseCode}: ` + (backendError || 'ไม่ทราบสาเหตุ');
+                errorMessage.value = errorDetail;
+                // Toast Error
+                toast.add({
+                    severity: 'error',
+                    summary: 'เกิดข้อผิดพลาด',
+                    detail: errorDetail,
+                    life: 5000 // แสดงผลนานขึ้นสำหรับข้อผิดพลาด
+                });
+            } finally {
+                isSaving.value = false;
+            }
+        },
+        reject: () => {
+            console.log('saveGrade: Rejected confirmation for', effectiveCourseCode);
+            // (Optional) ทำอะไรบางอย่างถ้าผู้ใช้กดยกเลิก
+            // ไม่ต้อง set isSaving เพราะยังไม่ได้เริ่ม
+        }
+    });
+    console.log('saveGrade: confirm.require() called for', effectiveCourseCode); // เช็คว่าเรียก confirm
 };
 
 // บันทึกเกรดทั้งหมดที่มีการแก้ไข
 const saveAllGrades = async () => {
+    console.log('--- saveAllGrades ENTERED ---', new Date().toISOString());
     // ป้องกันการกดซ้ำซ้อน
-    if (isSaving.value) return;
+    if (isSaving.value) {
+        console.log('saveAllGrades: Already saving, returning.');
+        return;
+    }
 
-    try {
-        const currentUser = getCurrentUser();
-        if (!currentUser?.studentID) {
-            errorMessage.value = 'ไม่พบรหัสนักศึกษา';
-            return;
+    // --- *** 1. ค้นหารายการที่จะบันทึกและเตรียมข้อมูล **ก่อน** เรียก confirm *** ---
+    const gradesToPush: Grades[] = [];
+    const gradesToEdit: Grades[] = [];
+    const coursesToResetFlag: CourseDisplayData[] = [];
+    const skippedCourses: { name: string; reason: string }[] = [];
+    const coursesToConfirm: { name: string; grade: string | null; code: string | null }[] = []; // เก็บข้อมูลสำหรับแสดงใน popup
+
+    const currentUser = getCurrentUser(); // ดึง user มาก่อน
+    if (!currentUser?.studentID) {
+        errorMessage.value = 'ไม่พบรหัสนักศึกษา';
+        return; // ออกก่อนถ้าไม่มี user ID
+    }
+
+    // รวมทุก Courses จากทุก Semester และ Other Courses
+    const allCoursesToCheck = [
+        ...allSemesters.value.flatMap((s) => s.courses),
+        ...(otherCourses.value || []) // เผื่อ otherCourses เป็น null/undefined
+    ];
+
+    allCoursesToCheck.forEach((course) => {
+        if (course.isModified) {
+            let effectiveCourseCode = course.courseCode;
+            if (!effectiveCourseCode && course.courseNameTH) {
+                effectiveCourseCode = getPlaceholderCourseCode(course.courseNameTH);
+            }
+
+            if (!effectiveCourseCode) {
+                console.warn(`Skipping save for course "${course.courseNameTH}" in saveAll due to missing/unmappable code.`);
+                skippedCourses.push({ name: course.courseNameTH, reason: 'ไม่พบรหัสวิชา' });
+                // ไม่ต้องเคลียร์ isModified ที่นี่ ปล่อยให้ user แก้ไข
+                return; // ข้าม course นี้
+            }
+
+            // เพิ่มรายการนี้สำหรับแสดงใน popup
+            coursesToConfirm.push({
+                name: course.courseNameTH,
+                grade: course.grade,
+                code: effectiveCourseCode // ใช้ effective code
+            });
+
+            // เตรียม Payload สำหรับ API call
+            const payload: Grades = {
+                studentId: currentUser.studentID,
+                courseCode: effectiveCourseCode,
+                grade: course.grade || '',
+                credit: course.credit
+            };
+
+            if (course.wasInitiallyNull && course.grade) {
+                gradesToPush.push(payload);
+                coursesToResetFlag.push(course);
+            } else if (!course.wasInitiallyNull) {
+                gradesToEdit.push(payload);
+                coursesToResetFlag.push(course);
+            } else if (course.wasInitiallyNull && !course.grade) {
+                // ไม่ต้องทำอะไรกับ API แต่ต้องเคลียร์ flag เพราะถือว่า user action เสร็จสิ้น
+                console.log(`Clearing modified flag for ${effectiveCourseCode} - was null, still null.`);
+                // เราจะเคลียร์ flag หลังกด accept ถ้าสำเร็จ หรือไม่ก็เคลียร์เลยก็ได้
+                // course.isModified = false; // พิจารณาว่าจะเคลียร์ตอนไหน
+                // แต่ถ้าเคลียร์ตอนนี้ มันจะไม่ถูกนับใน coursesToConfirm -> ไม่ควรเคลียร์ตอนนี้
+            }
         }
-        isSaving.value = true; // เริ่มบันทึกทั้งหมด
-        errorMessage.value = null; // เคลียร์ข้อผิดพลาดเก่า
+    });
 
-        const gradesToPush: Grades[] = [];
-        const gradesToEdit: Grades[] = [];
-        const coursesToResetFlag: CourseDisplayData[] = []; // รายการที่จะเคลียร์ isModified ถ้าสำเร็จ
-        const skippedCourses: { name: string; reason: string }[] = [];
+    // --- *** 2. ตรวจสอบว่ามีอะไรให้บันทึกหรือไม่ *** ---
+    if (coursesToConfirm.length === 0) {
+        console.log('saveAllGrades: No modified courses to save.');
+        let toastSeverity: 'info' | 'warn' = 'info';
+        let toastDetail = 'ไม่มีการเปลี่ยนแปลงที่ต้องบันทึก';
 
-        allSemesters.value.forEach((semester) => {
-            semester.courses.forEach((course) => {
-                if (course.isModified) {
-                    // --- กำหนด Course Code ---
-                    let effectiveCourseCode = course.courseCode;
-                    if (!effectiveCourseCode && course.courseNameTH) {
-                        effectiveCourseCode = getPlaceholderCourseCode(course.courseNameTH);
-                    }
+        if (skippedCourses.length > 0) {
+            toastSeverity = 'warn';
+            toastDetail = `ไม่มีรายการที่แก้ไข แต่มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้เนื่องจาก: ${skippedCourses.map((s) => s.reason).join(', ')}`;
+            errorMessage.value = toastDetail; // อาจยังต้องการแสดง error message หลัก
+        } else {
+            errorMessage.value = toastDetail; // หรือแสดงเป็น info message
+        }
+        // --- Toast แจ้งเตือน/ข้อมูล ---
+        toast.add({ severity: toastSeverity, summary: 'ข้อมูล', detail: toastDetail, life: 4000 });
+        return;
+    }
 
-                    if (!effectiveCourseCode) {
-                        console.warn(`Skipping save for course "${course.courseNameTH}" in saveAll due to missing/unmappable code.`);
-                        skippedCourses.push({ name: course.courseNameTH, reason: 'ไม่พบรหัสวิชา' });
-                        // *** ไม่เคลียร์ isModified ของตัวที่ข้าม *** ผู้ใช้ต้องแก้ไขเอง
-                        return; // ข้าม course นี้
-                    }
-                    // --- สิ้นสุดกำหนด Course Code ---
+    // --- *** 3. สร้างข้อความสำหรับ Popup *** ---
+    let confirmationMessage = `คุณต้องการบันทึกการเปลี่ยนแปลง ${coursesToConfirm.length} รายการ ดังนี้หรือไม่?\n\n`; // เพิ่ม \n สองครั้งเพื่อเว้นบรรทัดก่อนเริ่ม list
 
-                    const payload: Grades = {
-                        studentId: currentUser.studentID,
-                        courseCode: effectiveCourseCode,
-                        grade: course.grade || '',
-                        credit: course.credit
-                    };
+    const formattedItemList = coursesToConfirm
+        .map((item) => {
+            const gradeDisplay = item.grade || 'ค่าว่าง'; // จัดการกรณีเกรดเป็น null/empty
+            // ใส่ '-' หรือ bullet point อื่นๆ นำหน้าแต่ละรายการเพื่อให้ดูเป็น list
+            return `- ${item.code} ${item.name} (เกรด: ${gradeDisplay})`;
+        })
+        .join('\n'); // นำแต่ละรายการมาต่อกันด้วยการขึ้นบรรทัดใหม่
 
-                    // ตัดสินใจว่าจะ Push หรือ Edit
-                    if (course.wasInitiallyNull && course.grade) {
-                        gradesToPush.push(payload);
-                        coursesToResetFlag.push(course); // เพิ่มในรายการที่จะเคลียร์ flag
-                    } else if (!course.wasInitiallyNull) {
-                        // ถ้าตอนแรกมีข้อมูล (ไม่ว่าจะแก้เป็นเกรดอะไร หรือลบ)
-                        gradesToEdit.push(payload);
-                        coursesToResetFlag.push(course); // เพิ่มในรายการที่จะเคลียร์ flag
-                    } else if (course.wasInitiallyNull && !course.grade) {
-                        // ตอนแรก null, แก้แล้ว แต่ก็ยังเป็น null -> ไม่ต้องทำอะไร และเคลียร์ flag ได้เลย
-                        console.log(`Clearing modified flag for ${effectiveCourseCode} - was null, still null.`);
-                        course.isModified = false; // เคลียร์ flag ที่นี่เลย
+    confirmationMessage += formattedItemList; // นำ list ที่ได้มาต่อท้าย header message
+
+    // --- *** 4. เรียก confirm.require พร้อม Message ที่เตรียมไว้ *** ---
+    console.log('Confirmation Message:\n', confirmationMessage);
+
+    // --- *** 4. เรียก confirm.require พร้อม Message ที่เตรียมไว้ *** ---
+    confirm.require({
+        message: confirmationMessage, // <--- ใช้ข้อความที่สร้าง
+        header: 'ยืนยันการบันทึกทั้งหมด',
+        icon: 'pi pi-exclamation-triangle',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-success',
+        acceptLabel: 'บันทึก', // แก้ Label
+        rejectLabel: 'ยกเลิก',
+        accept: async () => {
+            // --- *** 5. ส่วนนี้จะทำงานเมื่อกดยืนยัน ใช้ข้อมูลที่เตรียมไว้แล้ว *** ---
+            console.log('saveAllGrades: Accepted confirmation.');
+            try {
+                // isSaving, currentUser, errorMessage ถูกจัดการ/ตรวจสอบแล้วก่อน confirm
+                isSaving.value = true;
+                errorMessage.value = null;
+
+                // ตรวจสอบอีกครั้งเผื่อกรณีข้อมูลเปลี่ยนระหว่างรอ confirm (ไม่น่าเกิด แต่กันไว้)
+                if (gradesToPush.length === 0 && gradesToEdit.length === 0) {
+                    console.log('saveAllGrades accept: No grades need saving via API (checked again).');
+                    errorMessage.value = 'ไม่มีการเปลี่ยนแปลงที่ต้องบันทึก (ตรวจสอบอีกครั้ง)';
+                    isSaving.value = false;
+                    return;
+                }
+
+                let pushSuccess = true;
+                let editSuccess = true;
+                let pushErrorMsg: string | null = null;
+                let editErrorMsg: string | null = null;
+                const coursesWithErrors: string[] = []; // เก็บ code ที่ error
+
+                // --- เรียก API Push (ใช้ gradesToPush ที่เตรียมไว้) ---
+                if (gradesToPush.length > 0) {
+                    console.log('Calling PushGrades with:', gradesToPush);
+                    try {
+                        await gradeService.pushGrades(gradesToPush); // หรือวน loop
+                        console.log('PushGrades successful');
+                        // อัปเดต wasInitiallyNull หลัง Push สำเร็จ
+                        coursesToResetFlag.forEach((course) => {
+                            let effCode = course.courseCode || getPlaceholderCourseCode(course.courseNameTH);
+                            if (course.wasInitiallyNull && gradesToPush.some((p) => p.courseCode === effCode)) {
+                                course.wasInitiallyNull = false;
+                            }
+                        });
+                    } catch (pushError: any) {
+                        pushSuccess = false;
+                        console.error('Error pushing grades:', pushError);
+                        pushErrorMsg = 'เกิดข้อผิดพลาดในการเพิ่มเกรดใหม่: ' + (pushError.response?.data?.title || pushError.message || 'ไม่ทราบสาเหตุ');
+                        gradesToPush.forEach((g) => coursesWithErrors.push(g.courseCode));
                     }
                 }
-            });
-        });
 
-        // ตรวจสอบว่ามีอะไรต้องบันทึกหรือไม่
-        if (gradesToPush.length === 0 && gradesToEdit.length === 0) {
-            console.log('No grades need saving via API.');
-            if (skippedCourses.length > 0) {
-                errorMessage.value = `มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้เนื่องจากไม่พบรหัสวิชา: ${skippedCourses.map((s) => s.name).join(', ')}`;
-            } else {
-                errorMessage.value = 'ไม่มีการเปลี่ยนแปลงที่ต้องบันทึก'; // หรือใช้ Toast แจ้งเตือน
-            }
-            isSaving.value = false;
-            return; // ออกจากฟังก์ชันถ้าไม่มีอะไรส่งไป API
-        }
-
-        let pushSuccess = true;
-        let editSuccess = true;
-        let pushErrorMsg: string | null = null;
-        let editErrorMsg: string | null = null;
-
-        // --- เรียก API Push ---
-        if (gradesToPush.length > 0) {
-            console.log('Calling PushGrades with:', gradesToPush);
-            try {
-                // *** สมมติว่ามี gradeService.pushGrades ที่รับ Array ***
-                // ถ้าไม่มี ต้องวนลูปเรียก gradeService.pushGrade ทีละตัว
-                await gradeService.pushGrades(gradesToPush);
-                console.log('PushGrades successful');
-                // อัปเดต wasInitiallyNull สำหรับตัวที่ push สำเร็จ (สำคัญมาก)
-                coursesToResetFlag.forEach((course) => {
-                    // หา effectiveCode อีกครั้งเผื่อกรณี
-                    let effectiveCode = course.courseCode || getPlaceholderCourseCode(course.courseNameTH);
-                    if (course.wasInitiallyNull && gradesToPush.some((p) => p.courseCode === effectiveCode)) {
-                        course.wasInitiallyNull = false;
-                    }
-                });
-            } catch (pushError: any) {
-                pushSuccess = false;
-                console.error('Error pushing grades:', pushError.response?.data || pushError.message || pushError);
-                pushErrorMsg = 'เกิดข้อผิดพลาดในการเพิ่มเกรดใหม่: ' + (pushError.response?.data?.title || pushError.message || 'ไม่ทราบสาเหตุ');
-            }
-        }
-
-        // --- เรียก API Edit ---
-        if (gradesToEdit.length > 0) {
-            console.log('Calling EditGrade (looping) for:', gradesToEdit);
-            // *** วนลูปเรียก editGrade ทีละตัว ***
-            // (ถ้ามี endpoint /UpdateGrades ที่รับ Array ได้ จะดีกว่า)
-            let individualEditErrors = 0;
-            try {
-                for (const gradePayload of gradesToEdit) {
-                    try {
-                        await gradeService.editGrade(gradePayload);
-                    } catch (singleEditError: any) {
-                        individualEditErrors++;
-                        console.error(`Error editing grade ${gradePayload.courseCode}:`, singleEditError.response?.data || singleEditError.message || singleEditError);
-                        // เก็บข้อผิดพลาดแรก หรือข้อผิดพลาดรวม (อาจจะยาวไป)
-                        if (!editErrorMsg) {
-                            editErrorMsg = `เกิดข้อผิดพลาดในการอัปเดตเกรดวิชา ${gradePayload.courseCode}: ` + (singleEditError.response?.data?.title || singleEditError.message || 'ไม่ทราบสาเหตุ');
+                // --- เรียก API Edit (ใช้ gradesToEdit ที่เตรียมไว้) ---
+                if (gradesToEdit.length > 0) {
+                    console.log('Calling EditGrade (looping) for:', gradesToEdit);
+                    let individualEditErrors = 0;
+                    for (const gradePayload of gradesToEdit) {
+                        try {
+                            await gradeService.editGrade(gradePayload);
+                        } catch (singleEditError: any) {
+                            individualEditErrors++;
+                            console.error(`Error editing grade ${gradePayload.courseCode}:`, singleEditError);
+                            coursesWithErrors.push(gradePayload.courseCode);
+                            if (!editErrorMsg) {
+                                editErrorMsg = `เกิดข้อผิดพลาดในการอัปเดตเกรด (เช่น วิชา ${gradePayload.courseCode}): ` + (singleEditError.response?.data?.title || singleEditError.message || 'ไม่ทราบสาเหตุ');
+                            }
                         }
                     }
+                    if (individualEditErrors > 0) {
+                        editSuccess = false;
+                        console.log(`Edit Grades completed with ${individualEditErrors} errors.`);
+                    } else {
+                        console.log('Edit Grades successful');
+                    }
                 }
-                if (individualEditErrors === 0) {
-                    console.log('Edit Grades successful');
+
+                // --- สรุปผลและเคลียร์ Flag (เฉพาะรายการที่สำเร็จ) ---
+                const allApisAttemptedAndSucceeded = pushSuccess && editSuccess;
+
+                coursesToResetFlag.forEach((course) => {
+                    let effCode = course.courseCode || getPlaceholderCourseCode(course.courseNameTH);
+                    // เคลียร์เฉพาะตัวที่ *ไม่* อยู่ใน list error
+                    if (effCode && !coursesWithErrors.includes(effCode)) {
+                        course.isModified = false;
+                    } else if (!effCode) {
+                        // กรณี course code เป็น null ตอนแรก -> หา placeholder code
+                        const placeholder = getPlaceholderCourseCode(course.courseNameTH);
+                        if (placeholder && !coursesWithErrors.includes(placeholder)) {
+                            course.isModified = false;
+                        }
+                    }
+                });
+                console.log(`Cleared modified flags for successful items. ${coursesWithErrors.length} items still marked as modified.`);
+
+                if (allApisAttemptedAndSucceeded && skippedCourses.length === 0) {
+                    console.log('บันทึกข้อมูลทั้งหมดสำเร็จ');
+                    errorMessage.value = null; // เคลียร์ error เก่า ถ้ามี
+                    // Toast Success
+                    toast.add({
+                        severity: 'success',
+                        summary: 'บันทึกทั้งหมดสำเร็จ',
+                        detail: `บันทึกข้อมูลเกรด ${coursesToConfirm.length} รายการเรียบร้อยแล้ว`,
+                        life: 3000
+                    });
                 } else {
-                    console.log(`Edit Grades completed with ${individualEditErrors} errors.`);
-                    editSuccess = false; // มี error ในการ edit อย่างน้อย 1 รายการ
-                    // editErrorMsg ถูกกำหนดค่าแล้วใน loop
+                    let finalMessage = '';
+                    let finalSeverity: 'warn' | 'error' = 'warn'; // เริ่มต้นเป็น warn
+
+                    if (!pushSuccess || !editSuccess) {
+                        finalMessage += (pushErrorMsg || '') + (editErrorMsg ? (pushErrorMsg ? '; ' : '') + editErrorMsg : '');
+                        finalSeverity = 'error'; // ถ้า API fail ให้เป็น error
+                    }
+                    if (skippedCourses.length > 0) {
+                        finalMessage += (finalMessage ? '; ' : '') + `มี ${skippedCourses.length} รายการที่ข้ามไป (${skippedCourses.map((s) => s.name).join(', ')})`;
+                        // ถ้ามี error อยู่แล้ว ให้คงเป็น error, ถ้าไม่มี error แต่มี skip ให้เป็น warn
+                        finalSeverity = finalSeverity === 'error' ? 'error' : 'warn';
+                    }
+                    errorMessage.value = finalMessage.trim() || 'เกิดข้อผิดพลาดบางอย่างในการบันทึก';
+                    console.error('Save All completed with errors or skips:', errorMessage.value);
+                    // --- Toast แจ้งเตือน/ข้อผิดพลาด ---
+                    toast.add({
+                        severity: finalSeverity,
+                        summary: finalSeverity === 'error' ? 'เกิดข้อผิดพลาด' : 'บันทึกบางส่วน',
+                        detail: errorMessage.value,
+                        life: 5000
+                    });
                 }
-            } catch (loopError: any) {
-                // Error ที่เกิดนอกเหนือจากการเรียก API แต่ละตัว (ไม่น่าเกิด)
-                editSuccess = false;
-                console.error('Unexpected error during editing loop:', loopError);
-                if (!editErrorMsg) {
-                    // ถ้ายังไม่มี error message จากข้างใน
-                    editErrorMsg = 'เกิดข้อผิดพลาดระหว่างการอัปเดตเกรด';
-                }
+            } catch (error: any) {
+                console.error('Unexpected error in saveAllGrades accept callback:', error);
+                const errorDetail = 'เกิดข้อผิดพลาดไม่คาดคิดในการบันทึก: ' + error.message;
+                errorMessage.value = errorDetail;
+                // Toast Error
+                toast.add({ severity: 'error', summary: 'ข้อผิดพลาดรุนแรง', detail: errorDetail, life: 5000 });
+            } finally {
+                isSaving.value = false;
             }
+            // --- สิ้นสุดการทำงานใน accept ---
+        },
+        reject: () => {
+            console.log('saveAllGrades: Rejected confirmation.');
+            // User cancelled - ไม่ต้องทำอะไร
         }
-
-        // --- สรุปผลและเคลียร์ Flag ---
-        const allApisSucceeded = pushSuccess && editSuccess;
-
-        if (allApisSucceeded) {
-            // เคลียร์ isModified ของรายการที่ process สำเร็จทั้งหมด (อยู่ใน coursesToResetFlag)
-            coursesToResetFlag.forEach((course) => {
-                course.isModified = false;
-            });
-            console.log('All processed modified flags cleared.');
-            // แสดงข้อความสำเร็จ (อาจรวมถึงรายการที่ข้าม)
-            if (skippedCourses.length > 0) {
-                errorMessage.value = `บันทึกสำเร็จ ${coursesToResetFlag.length} รายการ มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้: ${skippedCourses.map((s) => s.name).join(', ')}`;
-                // ใช้ Toast สีเหลือง (Warning)
-            } else {
-                // แสดง Toast สีเขียว สำเร็จสมบูรณ์
-                console.log('บันทึกข้อมูลทั้งหมดสำเร็จ');
-                // อาจจะตั้งค่า Success message ให้แสดงใน template ชั่วคราว
-                // successMessage.value = "บันทึกข้อมูลทั้งหมดสำเร็จ";
-            }
-        } else {
-            // มี Error เกิดขึ้น หรือ มีการข้ามรายการ และ API ล้มเหลว
-            console.log('Save completed with errors or skipped items.');
-            let finalErrorMessage = '';
-            if (pushErrorMsg) finalErrorMessage += pushErrorMsg;
-            if (editErrorMsg) finalErrorMessage += (finalErrorMessage ? '; ' : '') + editErrorMsg;
-
-            if (skippedCourses.length > 0) {
-                finalErrorMessage += (finalErrorMessage ? '; ' : '') + `มี ${skippedCourses.length} รายการที่ไม่สามารถบันทึกได้เนื่องจากไม่พบรหัสวิชา.`;
-            }
-            errorMessage.value = finalErrorMessage || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุในการบันทึก'; // ข้อความ fallback
-            // แสดง Toast Error รวม
-            // *** สำคัญ: ไม่เคลียร์ isModified ของรายการที่ API ล้มเหลว ***
-        }
-    } catch (error: any) {
-        console.error('Unexpected error in saveAllGrades:', error);
-        if (!errorMessage.value) {
-            // ถ้ายังไม่มี error message จากข้างใน
-            errorMessage.value = 'เกิดข้อผิดพลาดไม่ทราบสาเหตุในการบันทึกทั้งหมด';
-        }
-        // แสดง Toast Error
-    } finally {
-        isSaving.value = false; // สิ้นสุดการบันทึกทั้งหมด
-    }
+    });
+    console.log('saveAllGrades: confirm.require() called.');
 };
 
 // --- โหลดข้อมูลเมื่อเริ่มต้นคอมโพเนนต์ ---
@@ -703,6 +844,7 @@ onMounted(async () => {
 });
 </script>
 <template>
+    <Toast />
     <h2 class="text-primary">บันทึกผลการเรียน</h2>
 
     <div v-if="isLoading" class="loading">กำลังโหลดข้อมูล...</div>
@@ -716,7 +858,7 @@ onMounted(async () => {
                     <span class="value">{{ calculateGPAX().toFixed(2) }}</span>
                 </div>
                 <div class="gpa-item">
-                    <span class="label">หน่วยกิตรวม:</span>
+                    <span class="label">หน่วยกิตรวม (หน่วยกิตที่ได้/หน่วยกิตที่ต้องการ):</span>
                     <span class="value">{{ totalCredits }}/124</span>
                 </div>
                 <div class="save-button">
@@ -775,7 +917,16 @@ onMounted(async () => {
                     </Column>
                     <Column field="credit" header="จำนวนหน่วยกิต" style="width: 15%">
                         <template #body="slotProps">
-                            <InputNumber v-model="slotProps.data.credit" placeholder="หน่วยกิต" @input="courseDataChanged(slotProps.data)" :min="0" :max="10" :disabled="!slotProps.data.wasInitiallyNull" />
+                            <InputNumber
+                                v-model="slotProps.data.credit"
+                                placeholder="หน่วยกิต"
+                                @input="courseDataChanged(slotProps.data)"
+                                :min="0"
+                                :max="9"
+                                :disabled="!slotProps.data.wasInitiallyNull"
+                                :maxlength="1"
+                                @keydown="limitInputLength($event, 1)"
+                            />
                         </template>
                     </Column>
                     <Column field="gradePoint" header="แต้มคะแนน" style="width: 15%">
@@ -823,19 +974,22 @@ onMounted(async () => {
 }
 
 .gpa-item {
-    display: flex;
-    align-items: center;
-    margin-right: 1rem;
+    /* อาจมีสไตล์เดิมอยู่แล้ว หรือเพิ่มเพื่อให้จัดวาง label กับ value ได้ดีขึ้น */
+    display: inline-flex; /* ทำให้ label กับ value อยู่ติดกัน */
+    align-items: baseline; /* จัดแนวข้อความให้ตรงกันที่ baseline */
 }
 
 .gpa-item .label {
     font-weight: bold;
-    margin-right: 0.5rem;
+    font-size: 1.2rem; /* <<-- ปรับขนาดตัวอักษร "หน่วยกิตรวมที่เลือก:" ที่นี่ (ตัวอย่าง: 1.1rem) */
+    /* color: #6c757d; <<-- ปรับสีตัวอักษร "หน่วยกิตรวมที่เลือก:" (ตัวอย่าง: สีเทาเข้ม) */
+    margin-right: 0.5rem; /* เพิ่มระยะห่างระหว่าง label กับ value เล็กน้อย */
 }
 
 .gpa-item .value {
-    font-size: 1.2rem;
-    color: #3b82f6;
+    font-size: 1.3rem; /* <<-- ปรับขนาดตัวเลขหน่วยกิต ที่นี่ (ตัวอย่าง: 1.3rem ทำให้ใหญ่กว่า label) */
+    color: #007bff; /* <<-- ปรับสีตัวเลขหน่วยกิต ที่นี่ (ตัวอย่าง: สีน้ำเงินหลัก) */
+    font-weight: bold; /* ทำให้ตัวเลขดูเด่นขึ้น */
 }
 
 .semester-summary {
