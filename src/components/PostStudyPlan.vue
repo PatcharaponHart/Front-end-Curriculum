@@ -69,6 +69,16 @@ const totalCredits = computed(() => {
             }
         });
     });
+    // รวมหน่วยกิตจากวิชาอื่นๆ
+    if (otherCourses.value && Array.isArray(otherCourses.value)) {
+        // ตรวจสอบเผื่อ otherCourses ยังไม่มีค่าหรือไม่ได้เป็น array
+        otherCourses.value.forEach((course) => {
+            // นับหน่วยกิตเฉพาะเกรดที่มีค่า (A-F)
+            if (course.grade && gradeValues.hasOwnProperty(course.grade)) {
+                total += course.credit;
+            }
+        });
+    }
     return total;
 });
 
@@ -165,6 +175,17 @@ const calculateGPAX = (): number => {
             }
         });
     });
+    // รวมวิชาอื่นๆ
+    if (otherCourses.value && Array.isArray(otherCourses.value)) {
+        // ตรวจสอบเผื่อ otherCourses ยังไม่มีค่าหรือไม่ได้เป็น array
+        otherCourses.value.forEach((course) => {
+            // คำนวณ GPAX เฉพาะเกรดที่มีค่า (A-F)
+            if (course.grade && gradeValues.hasOwnProperty(course.grade)) {
+                totalPoints += gradeValues[course.grade] * course.credit;
+                totalCreditsForGPA += course.credit;
+            }
+        });
+    }
 
     // ป้องกันการหารด้วยศูนย์
     return totalCreditsForGPA === 0 ? 0.0 : totalPoints / totalCreditsForGPA;
