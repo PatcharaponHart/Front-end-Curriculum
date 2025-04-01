@@ -733,7 +733,7 @@ onMounted(async () => {
                     <Column field="courseNameTH" header="ชื่อวิชา" style="width: 25%" />
                     <Column field="grade" header="เกรดวิชา" style="width: 20%">
                         <template #body="slotProps">
-                            <Select v-model="slotProps.data.grade" :options="gradeOptions" placeholder="เลือกเกรด" style="width: 80px" appendTo="body" @change="courseGradeChanged(slotProps.data)" />
+                            <Select v-model="slotProps.data.grade" :options="gradeOptions" placeholder="เลือกเกรด" style="width: 116px" appendTo="body" @change="courseGradeChanged(slotProps.data)" />
                         </template>
                     </Column>
                     <Column field="credit" header="จำนวนหน่วยกิต" style="width: 15%" />
@@ -770,7 +770,7 @@ onMounted(async () => {
                     </Column>
                     <Column field="grade" header="เกรดวิชา" style="width: 20%">
                         <template #body="slotProps">
-                            <Select v-model="slotProps.data.grade" :options="gradeOptions" placeholder="เลือกเกรด" style="width: 80px" appendTo="body" @change="courseGradeChanged(slotProps.data)" />
+                            <Select v-model="slotProps.data.grade" :options="gradeOptions" placeholder="เลือกเกรด" style="width: 116px" appendTo="body" @change="courseGradeChanged(slotProps.data)" />
                         </template>
                     </Column>
                     <Column field="credit" header="จำนวนหน่วยกิต" style="width: 15%">
