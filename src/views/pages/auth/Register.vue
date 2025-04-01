@@ -27,7 +27,7 @@
 
             <div class="mb-6">
                 <label for="section" class="block text-base font-medium text-gray-700">หมู่เรียน</label>
-                <select v-model="section" id="section" required class="w-full px-4 py-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg bg-white">
+                <select v-model="section" id="section" required class="w-full px-4 py-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg">
                     <option value="" disabled selected>-- เลือกหมู่เรียน --</option>
 
                     <option v-for="option in sectionOptions" :key="option.value" :value="option.value">
@@ -189,5 +189,7 @@ const onRegister = async () => {
 </script>
 
 <style scoped>
-/* สไตล์เฉพาะของหน้านี้ */
+.bg-white{
+    background: rgb(194, 243, 190); 
+}
 </style>

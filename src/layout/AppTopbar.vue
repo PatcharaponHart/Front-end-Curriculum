@@ -119,7 +119,9 @@ const confirmLogout = () => {
     text-decoration: none;
     color: inherit;
 }
-
+.layout-topbar {
+    background: linear-gradient(to right, #f1f5f0, #7de14e); /* ไล่สีจากอ่อน -> เข้ม */
+}
 .logo-image {
     height: 60px; /* ปรับขนาดตรงนี้ */
     width: auto;

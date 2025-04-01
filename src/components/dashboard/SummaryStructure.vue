@@ -184,7 +184,7 @@ const pieChartData = computed(() => {
   const remaining = 1 - percentage;
   
   // คำนวณค่าต่างๆ สำหรับ SVG
-  const radius = 40;
+  const radius = 45; // เพิ่มขนาดวงกลม
   const circumference = 2 * Math.PI * radius;
   const gpaStrokeDasharray = circumference * percentage;
   const remainingStrokeDasharray = circumference * remaining;
@@ -226,39 +226,39 @@ onMounted(fetchStudentGradesAndCalculateCredits);
 
 <template>
   <div class="card">
-    <h2 class="text-primary font-bold mb-4">ข้อมูลสรุปตามโครงสร้างหลักสูตร</h2>
+    <h2 class="text-primary">ข้อมูลสรุปตามโครงสร้างหลักสูตร</h2>
     
-    <div v-if="isLoading" class="py-4 text-center text-gray-500">
+    <div v-if="isLoading" class="py-8 text-center text-gray-500 text-lg">
       กำลังโหลดข้อมูล...
     </div>
     
-    <div v-else-if="errorMessage" class="py-4 text-center text-red-500">
+    <div v-else-if="errorMessage" class="py-8 text-center text-red-500 text-lg">
       {{ errorMessage }}
     </div>
     
     <div v-else>
-      <div class="mb-4 p-4 bg-gray-50 rounded-md">
+      <div class="mb-6 p-6 bg-gray-50 rounded-lg shadow-sm">
         <div class="flex justify-between items-center">
           <!-- GPA Pie Chart -->
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-6">
             <div class="relative">
-              <svg height="100" width="100" class="transform -rotate-90">
+              <svg height="120" width="120" class="transform -rotate-90">
                 <!-- เส้นขอบวงกลมสีเทาอ่อน (ส่วนที่เหลือ) -->
                 <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="40" 
+                  cx="60" 
+                  cy="60" 
+                  r="45" 
                   stroke="#e5e7eb" 
-                  stroke-width="10" 
+                  stroke-width="12" 
                   fill="transparent"
                 />
                 <!-- ส่วนที่แสดง GPA -->
                 <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="40" 
-                  stroke-width="10" 
-                  stroke-dasharray="251.2"
+                  cx="60" 
+                  cy="60" 
+                  r="45" 
+                  stroke-width="12" 
+                  stroke-dasharray="282.7"
                   :stroke-dashoffset="pieChartData.circumference - pieChartData.gpaStrokeDasharray"
                   :stroke="pieChartData.gpaColor"
                   fill="transparent" 
@@ -267,28 +267,28 @@ onMounted(fetchStudentGradesAndCalculateCredits);
               </svg>
               <!-- แสดงค่า GPA ตรงกลางวงกลม -->
               <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <span class="text-2xl font-bold" :style="`color: ${pieChartData.gpaColor}`">{{ gpaInfo.gpa }}</span>
-                <span class="text-xs text-gray-500">GPA</span>
+                <span class="text-3xl font-bold" :style="`color: ${pieChartData.gpaColor}`">{{ gpaInfo.gpa }}</span>
+                <span class="text-sm text-gray-500 font-medium">GPA</span>
               </div>
             </div>
             
             <div class="flex flex-col">
-              <span class="text-xl font-medium text-gray-800">เกรดเฉลี่ยสะสม</span>
-              <span class="text-sm text-gray-500">จาก 4.00</span>
-              <span class="font-medium mt-1" :style="`color: ${pieChartData.gpaColor}`">
+              <span class="text-2xl font-medium text-gray-800">เกรดเฉลี่ยสะสม</span>
+              <span class="text-base text-gray-500">จาก 4.00</span>
+              <span class="font-medium mt-2 text-xl" :style="`color: ${pieChartData.gpaColor}`">
                 {{ pieChartData.gradeResult }}
               </span>
             </div>
           </div>
           
           <div>
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-medium text-gray-500">
+            <div class="flex items-center gap-3">
+              <span class="text-base font-medium text-gray-700">
                 {{ Math.round(gpaPercentage) }}% จากเกรดสูงสุด
               </span>
-              <div class="w-32 bg-gray-200 rounded-full h-2.5">
+              <div class="w-40 bg-gray-200 rounded-full h-3">
                 <div 
-                  class="h-2.5 rounded-full transition-all duration-1000 ease-out" 
+                  class="h-3 rounded-full transition-all duration-1000 ease-out" 
                   :style="`width: ${gpaPercentage}%; background-color: ${pieChartData.gpaColor}`"
                 ></div>
               </div>
@@ -297,15 +297,15 @@ onMounted(fetchStudentGradesAndCalculateCredits);
         </div>
       </div>
       
-      <div v-for="(group, index) in [...new Set(creditRequirements.map(item => item.group))]" :key="index">
+      <div v-for="(group, index) in [...new Set(creditRequirements.map(item => item.group))]" :key="index" class="mb-6">
         <div class="flex justify-between items-center">
-          <h3 class="text-lg font-semibold mt-4">{{ group }}</h3>
+          <h3 class="text-xl font-semibold mt-4">{{ group }}</h3>
           
-          <div class="text-sm" v-if="progressPerGroup.find(pg => pg.group === group)">
-            <div class="flex items-center gap-2">
-              <div class="w-32 bg-gray-200 rounded-full h-2.5">
+          <div class="text-base" v-if="progressPerGroup.find(pg => pg.group === group)">
+            <div class="flex items-center gap-3">
+              <div class="w-40 bg-gray-200 rounded-full h-3">
                 <div 
-                  class="bg-blue-600 h-2.5 rounded-full" 
+                  class="bg-blue-600 h-3 rounded-full" 
                   :style="`width: ${progressPerGroup.find(pg => pg.group === group)?.percentage}%`"
                 ></div>
               </div>
@@ -316,8 +316,8 @@ onMounted(fetchStudentGradesAndCalculateCredits);
           </div>
         </div>
         
-        <div class="border border-gray-300 rounded-md mt-2">
-          <div class="grid grid-cols-4 bg-gray-100 font-bold p-2 text-sm">
+        <div class="border border-gray-300 rounded-md mt-3 shadow-sm">
+          <div class="grid grid-cols-4 bg-gray-100 font-bold p-3 text-base">
             <span class="text-center text-primary">หมวดวิชา</span>
             <span class="text-center text-primary">หน่วยกิตที่ได้</span>
             <span class="text-center text-primary">หน่วยกิตที่ต้องการ</span>
@@ -327,7 +327,7 @@ onMounted(fetchStudentGradesAndCalculateCredits);
           <div
             v-for="(requirement, idx) in creditRequirements.filter(item => item.group === group)"
             :key="idx"
-            class="grid grid-cols-4 border-b p-2 text-sm items-center"
+            class="grid grid-cols-4 border-b p-3 text-base items-center"
             :class="{ 'bg-red-50': !requirement.isCompleted }"
           >
             <span>{{ requirement.subjectGroup }}</span>
@@ -336,14 +336,14 @@ onMounted(fetchStudentGradesAndCalculateCredits);
             </span>
             <span class="text-center">{{ requirement.requiredCredits }}</span>
             <span class="text-center">
-              <span v-if="requirement.isCompleted" class="text-green-500 font-bold">✔</span>
-              <span v-else class="text-red-500 font-bold">✘</span>
+              <span v-if="requirement.isCompleted" class="text-green-500 font-bold text-lg">✔</span>
+              <span v-else class="text-red-500 font-bold text-lg">✘</span>
             </span>
           </div>
         </div>
         
         <!-- สรุปหน่วยกิตในกลุ่มนี้ -->
-        <div class="mt-1 text-sm text-right">
+        <div class="mt-2 text-base text-right">
           <span>
             รวม: 
             <span class="font-medium">
@@ -355,29 +355,29 @@ onMounted(fetchStudentGradesAndCalculateCredits);
         </div>
       </div>
       
-      <div class="mt-6 p-4 bg-gray-50 rounded-md">
-        <div class="font-bold flex justify-between">
+      <div class="mt-8 p-6 bg-gray-50 rounded-lg shadow-sm">
+        <div class="font-bold flex justify-between text-lg">
           <span>รวมหน่วยกิตทั้งหมด</span>
           <span class="text-primary">
             {{ totalCredits.earnedTotal }}/{{ totalCredits.requiredTotal }} หน่วยกิต
           </span>
         </div>
         
-        <div class="mt-4 w-full bg-gray-200 rounded-full h-4">
+        <div class="mt-4 w-full bg-gray-200 rounded-full h-5">
           <div 
-            class="bg-blue-600 h-4 rounded-full text-xs text-white font-medium text-center leading-4" 
+            class="bg-blue-600 h-5 rounded-full text-sm text-white font-medium text-center leading-5" 
             :style="`width: ${Math.min(100, Math.round((totalCredits.earnedTotal / totalCredits.requiredTotal) * 100))}%`"
           >
             {{ Math.min(100, Math.round((totalCredits.earnedTotal / totalCredits.requiredTotal) * 100)) }}%
           </div>
         </div>
         
-        <div class="mt-4 flex justify-between text-sm text-gray-600">
+        <div class="mt-5 flex justify-between text-base text-gray-700">
           <span>
-            วิชาที่ลงทะเบียนทั้งหมด: {{ studentGrades?.grades.length || 0 }} วิชา
+            วิชาที่ลงทะเบียนทั้งหมด: <span class="font-medium">{{ studentGrades?.grades.length || 0 }}</span> วิชา
           </span>
           <span>
-            จำนวนหน่วยกิตที่ยังขาด: {{ Math.max(0, totalCredits.requiredTotal - totalCredits.earnedTotal) }} หน่วยกิต
+            จำนวนหน่วยกิตที่ยังขาด: <span class="font-medium">{{ Math.max(0, totalCredits.requiredTotal - totalCredits.earnedTotal) }}</span> หน่วยกิต
           </span>
         </div>
       </div>
@@ -391,5 +391,12 @@ onMounted(fetchStudentGradesAndCalculateCredits);
 }
 .grid {
   display: grid;
+}
+
+.card {
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 </style>

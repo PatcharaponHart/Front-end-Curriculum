@@ -112,7 +112,7 @@ button {
 }
 
 .bg-white {
-    background-color: #ffffff;
+    background: rgb(194, 243, 190); 
 }
 
 .bg-blue-500 {
