@@ -34,7 +34,8 @@
             </div>
             <div class="field">
                 <label for="credit">หน่วยกิต</label>
-                <InputNumber id="credit" v-model="newCourse.credit" mode="decimal" :min="1" :max="9" required :disabled="isSaving" />
+                <InputNumber id="credit" v-model="newCourse.credit" mode="decimal" :min="1" :max="9" required :disabled="isSaving" :maxlength="1"
+                @keydown="limitInputLength($event, 1)" />
             </div>
             <div class="field">
                 <label for="subjectGroup">กลุ่มวิชา</label>
@@ -82,7 +83,26 @@ const initialNewCourseState: Course = {
     subjectGroup: ''
 };
 const newCourse = reactive<Course>({ ...initialNewCourseState });
+    const limitInputLength = (event: KeyboardEvent, maxLength: number) => {
+    const target = event.target as HTMLInputElement;
+    const value = target.value || '';
 
+    // อนุญาตปุ่มที่ไม่ใช่ตัวเลข/ตัวอักษร เช่น Backspace, Delete, Arrow keys, Tab, Enter, Home, End
+    if (
+        ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Home', 'End'].includes(event.key) ||
+        // อนุญาต Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+        (event.ctrlKey && ['a', 'c', 'v', 'x'].includes(event.key.toLowerCase())) ||
+        // อนุญาต Cmd+A (สำหรับ Mac)
+        (event.metaKey && event.key.toLowerCase() === 'a')
+    ) {
+        return; // ไม่ต้องทำอะไร อนุญาตให้กดได้
+    }
+
+    // ถ้าความยาวถึง maxLength แล้ว และไม่ได้เลือกข้อความไว้ และปุ่มที่กดเป็นตัวเลข
+    if (value.length >= maxLength && target.selectionStart === target.selectionEnd && /\d/.test(event.key)) {
+        event.preventDefault(); // ป้องกันการพิมพ์เพิ่ม
+    }
+};
 // --- Computed Properties ---
 const filteredCourses = computed(() => {
     // ... (เหมือนเดิม) ...

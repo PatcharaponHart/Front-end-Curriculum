@@ -148,8 +148,8 @@ const clearSelections = () => {
         icon: 'pi pi-exclamation-triangle', // ไอคอน (เลือกได้)
         rejectLabel: 'ยกเลิก', // ข้อความปุ่มปฏิเสธ
         acceptLabel: 'ยืนยัน', // ข้อความปุ่มยืนยัน
-        rejectClass: 'p-button-secondary p-button-outlined', // Style ปุ่ม (ตัวเลือก)
-        acceptClass: 'p-button-danger', // Style ปุ่ม (ตัวเลือก)
+        rejectClass: 'p-button p-button-danger', // Style ปุ่ม (ตัวเลือก)
+        acceptClass: 'p-button-success', // Style ปุ่ม (ตัวเลือก)
         accept: () => {
             // --- ส่วนนี้จะทำงานเมื่อผู้ใช้กดยืนยัน ---
             // เคลียร์ข้อความสถานะเก่า (ถ้ามี)
@@ -355,7 +355,7 @@ onMounted(async () => {
                     <span class="value">{{ totalSelectedCredits }}/124</span>
                 </div>
                 <div class="clear-button">
-                    <Button label="ล้างค่าที่เลือก" icon="pi pi-refresh" @click="clearSelections" severity="danger" />
+                    <Button label="ล้างค่าที่เลือก" icon="pi pi-refresh" @click="clearSelections" severity="help" />
                 </div>
             </div>
         </div>

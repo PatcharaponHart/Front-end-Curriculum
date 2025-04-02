@@ -128,7 +128,7 @@ const onRegister = async () => {
         acceptLabel: 'ยืนยัน', // ข้อความปุ่มยืนยัน
         rejectLabel: 'ยกเลิก', // ข้อความปุ่มยกเลิก
         acceptClass: 'p-button-success', // (Optional) Class สำหรับปุ่ม Accept
-        rejectClass: 'p-button-outlined p-button-secondary', // (Optional) Class สำหรับปุ่ม Reject
+        rejectClass: 'p-button p-button-danger', // (Optional) Class สำหรับปุ่ม Reject
         accept: async () => {
             loading.value = true;
             try {
