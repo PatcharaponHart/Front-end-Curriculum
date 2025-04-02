@@ -94,7 +94,7 @@ export const isLoggedIn = (): boolean => {
 // ✅ ออกจากระบบ และ redirect
 export const logout = (): void => {
   clearAuthData();
-  window.location.href = '/login'; // หรือใช้ router.push('/login') ถ้าใช้ Vue Router
+  window.location.href = '/auth/login'; // หรือใช้ router.push('/login') ถ้าใช้ Vue Router
 };
 
 // ✅ ดึงข้อมูลผู้ใช้ที่ Login อยู่

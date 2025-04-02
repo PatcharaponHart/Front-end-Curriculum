@@ -93,7 +93,7 @@ const onLogin = async () => {
             router.push({ name: 'dashboard' });
         }
     } catch (error: any) {
-        toast.add({ severity: 'error', summary: 'เกิดข้อผิดพลาด', detail: error.message, life: 3000 });
+        toast.add({ severity: 'error', summary: 'เกิดข้อผิดพลาด', detail: 'ตรวจสอบชื่อผู้ใช้และรหัสผ่านอีกครั้ง', life: 3000 });
     } finally {
         loading.value = false;
     }

@@ -130,8 +130,6 @@ const onRegister = async () => {
         acceptClass: 'p-button-success', // (Optional) Class สำหรับปุ่ม Accept
         rejectClass: 'p-button-outlined p-button-secondary', // (Optional) Class สำหรับปุ่ม Reject
         accept: async () => {
-            // --- ย้าย Logic การส่งข้อมูลมาไว้ในนี้ ---
-            // โค้ดจะทำงานเมื่อผู้ใช้กด "ยืนยัน"
             loading.value = true;
             try {
                 const registrationData = {
@@ -145,12 +143,27 @@ const onRegister = async () => {
 
                 await studentService.registerStudent(registrationData);
 
-                // toast.add({ severity: 'success', summary: 'สำเร็จ', detail: result || 'ลงทะเบียนผู้ใช้สำเร็จ!', life: 3000 });
+                // แสดง toast บนหน้าปัจจุบัน
+                toast.add({
+                    severity: 'success',
+                    summary: 'ลงทะเบียนสำเร็จ',
+                    detail: 'กำลังนำคุณไปยังหน้าล็อกอิน',
+                    life: 2000
+                });
 
+                // บันทึกข้อมูลใน sessionStorage
                 sessionStorage.setItem('showLoginSuccessToast', 'true');
                 console.log('Session storage set');
 
-                router.push({ name: 'login' });
+                await new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        // ลองใช้การนำทางแบบจำเป็น (forced navigation)
+                        window.location.href = '/auth/login'; // แทนที่ด้วย URL จริงของหน้า login
+                        // หรือยังคงใช้ router แต่เพิ่ม flag replace
+                        // router.push({ name: 'login', replace: true });
+                        resolve();
+                    }, 2000);
+                });
             } catch (error: any) {
                 console.error('Registration Error:', error);
                 let detailMessage = 'ไม่สามารถลงทะเบียนได้ โปรดลองอีกครั้ง';
@@ -180,7 +193,6 @@ const onRegister = async () => {
             } finally {
                 loading.value = false;
             }
-            // --- สิ้นสุด Logic การส่งข้อมูล ---
         },
         reject: () => {
             // (Optional) โค้ดที่ต้องการให้ทำงานเมื่อผู้ใช้กด "ยกเลิก"
@@ -188,7 +200,6 @@ const onRegister = async () => {
         }
     });
 };
-// ... อื่นๆ
 </script>
 
 <style scoped>

@@ -15,7 +15,7 @@ const user = ref({
 onMounted(() => {
     if (!isLoggedIn()) {
         console.warn('ไม่มี token → เด้งกลับ Login');
-        router.push('/login');
+        router.push('/auth/login');
     } else {
         console.log('User is logged in');
         user.value = getCurrentUser(); // โหลดข้อมูลผู้ใช้
