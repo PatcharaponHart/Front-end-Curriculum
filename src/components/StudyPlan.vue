@@ -169,7 +169,7 @@ const clearSelections = () => {
             // แสดง Toast แจ้งเตือนว่าสำเร็จ
             toast.add({
                 severity: 'success', // ประเภท ('success', 'info', 'warn', 'error')
-                summary: 'สำเร็จ', // หัวข้อ Toast
+                summary: 'ล้างข้อมูลสำเร็จ', // หัวข้อ Toast
                 detail: 'ล้างค่าที่เลือกทั้งหมดเรียบร้อยแล้ว', // รายละเอียด
                 life: 3000 // ระยะเวลาแสดงผล (ms)
             });
