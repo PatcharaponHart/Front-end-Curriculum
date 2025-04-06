@@ -1,5 +1,5 @@
 <template>
-    <h2 class="text-primary">โครงสร้างหลักสูตรวิทยาศาสตรบัณฑิต พ.ศ. 2565</h2>
+    <h2 class="text-primary">โครงสร้างหลักสูตรวิทยาการคอมพิวเตอร์ พ.ศ. 2565</h2>
     <div class="card narrow-card">
         <p><strong class="me-2">1. หมวดวิชาศึกษาทั่วไป</strong> <span>ไม่น้อยกว่า 30 หน่วยกิต</span></p>
 
