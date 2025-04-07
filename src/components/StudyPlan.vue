@@ -242,7 +242,7 @@ onMounted(async () => {
             yr1Sem1: [
                 { courseCode: '01417111', courseNameTH: 'แคลคูลัส I', credit: 3 },
                 { courseCode: '01418111', courseNameTH: 'วิทยาการคอมพิวเตอร์เบื้องต้น', credit: 2 },
-                { courseCode: '01418112', courseNameTH: 'แนวคิดการโปรแกรมเบื้องต้น', credit: 3, prerequisites: ['01418111'] },
+                { courseCode: '01418112', courseNameTH: 'แนวคิดการโปรแกรมเบื้องต้น', credit: 3 },
                 { courseCode: '01418141', courseNameTH: 'ทรัพย์สินทางปัญญาและจรรยาบรรณวิชาชีพ', credit: 3 },
                 { courseCode: '01999111', courseNameTH: 'ศาสตร์แห่งแผ่นดิน', credit: 2 },
                 { courseCode: null, courseNameTH: 'วิชาภาษาไทย', credit: 3 },

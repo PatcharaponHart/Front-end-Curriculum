@@ -8,13 +8,107 @@ import Select from 'primevue/select'; // ถ้าใช้ Select ใน templa
 import Toast from 'primevue/toast';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import courseService, { Course } from '../service/courseService';
 
 const isSingleSaveMode = ref(false); // บอกว่า Dialog เปิดสำหรับ Save เดี่ยวหรือไม่
 const courseToSaveSingle = ref<CourseDisplayData | null>(null); // เก็บข้อมูล Course ที่จะ Save เดี่ยว
 const showSaveAllConfirmDialog = ref(false); // State ควบคุมการแสดง Dialog
 const coursesForCustomConfirm = ref<Array<{ name: string; grade: string | null; code: string | null }>>([]);
 
+const isAddDialogVisible = ref(false);
+
+const initialNewCourseState: Course = {
+    courseCode: 'F030',
+    courseNameTH: '',
+    courseNameEN: '',
+    credit: 1,
+    subjectGroup: ''
+};
+const newCourse = reactive<Course>({ ...initialNewCourseState });
+
+// Computed property สำหรับเช็คความถูกต้องของฟอร์มเพิ่มรายวิชา (ถ้ามีใช้ใน Dialog)
+const isFormValid = computed(() => {
+    return newCourse.courseCode && newCourse.courseNameTH && newCourse.courseNameEN && newCourse.credit !== null && newCourse.credit >= 0 && newCourse.subjectGroup;
+});
+
+// ฟังก์ชันเปิด Dialog เพิ่มรายวิชา
+const openAddDialog = () => {
+    Object.assign(newCourse, initialNewCourseState);
+    isAddDialogVisible.value = true;
+};
+
+// ฟังก์ชันปิด Dialog เพิ่มรายวิชา
+const closeAddDialog = () => {
+    // if (!isSaving.value) { // อาจจะเอา if ออกเพื่อให้ปิดได้เสมอ
+    isAddDialogVisible.value = false;
+    // }
+};
+
+// (ถ้าจำเป็น) ฟังก์ชันดึงข้อมูลวิชา - อาจจะต้องปรับแก้ตาม context ของหน้านี้
+const courses = ref<Course[]>([]); // หรือ state ที่เกี่ยวข้อง
+async function fetchCourses() {
+    // isLoading.value = true; // อาจจะใช้ loading state อื่น
+    try {
+        console.log('Fetching courses...');
+        const coursesList = await courseService.getCoursesList();
+        if (coursesList) {
+            courses.value = coursesList; // อัปเดต state ที่ใช้แสดงผลในหน้านี้ (ถ้ามี)
+            console.log('Courses fetched on this page:', coursesList.length);
+        } else {
+            courses.value = [];
+        }
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการดึงข้อมูลวิชา:', error);
+        toast.add({ severity: 'error', summary: 'ผิดพลาด', detail: 'ไม่สามารถดึงข้อมูลวิชาได้', life: 3000 });
+    } finally {
+        // isLoading.value = false;
+    }
+}
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// ฟังก์ชันบันทึกรายวิชาใหม่ (ยกมาจากหน้าแรก)
+const saveNewCourse = async () => {
+    if (!isFormValid.value || isSaving.value) {
+        // ใช้ isFormValid ที่ประกาศไว้ข้างบน
+        return;
+    }
+
+    // Client-side duplicate check (อาจจะต้องเช็คกับ 'courses' ที่ fetch มาในหน้านี้)
+    const enteredCode = newCourse.courseCode;
+    const isDuplicate = courses.value.some((course) => course.courseCode === enteredCode);
+    if (isDuplicate) {
+        toast.add({ severity: 'warn', summary: 'ข้อมูลซ้ำ', detail: `รหัสวิชา ${enteredCode} นี้มีอยู่ในรายการแล้ว กรุณาตรวจสอบ`, life: 4000 });
+        return;
+    }
+
+    isSaving.value = true; // *** ตั้งค่า isSaving เป็น true ***
+    const courseToAdd: Course = { ...newCourse }; // สร้าง object ใหม่
+
+    try {
+        const success = await courseService.pushCourse(courseToAdd);
+
+        if (success) {
+            toast.add({ severity: 'success', summary: 'สำเร็จ', detail: 'บันทึกข้อมูลวิชาเรียบร้อยแล้ว', life: 3000 });
+
+            // *** พิจารณาว่าจะ fetchCourses ในหน้านี้หรือไม่ ***
+            await fetchCourses(); // เรียกเพื่ออัปเดต list ถ้าหน้านี้ต้องใช้ข้อมูลล่าสุด
+
+            const closeDelay = 500;
+            await delay(closeDelay);
+            closeAddDialog(); // ปิด Dialog
+        } else {
+            console.error('การบันทึกข้อมูลไม่สำเร็จ (Backend รายงาน)');
+            toast.add({ severity: 'error', summary: 'ผิดพลาด', detail: `ไม่สามารถบันทึก ${courseToAdd.courseCode} ได้ (อาจมีรหัสนี้อยู่แล้ว)`, life: 4000 });
+        }
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล:', error);
+        toast.add({ severity: 'error', summary: 'ผิดพลาด', detail: 'เกิดข้อผิดพลาดในการเชื่อมต่อ หรือบันทึกข้อมูล', life: 3000 });
+    } finally {
+        isSaving.value = false; // *** คืนค่า isSaving เป็น false ***
+    }
+};
 // --- Interface สำหรับข้อมูล Course ---
 interface CourseDisplayData {
     courseCode: string | null; // อาจเป็น null ได้ในตอนแรก
@@ -46,7 +140,7 @@ const confirm = useConfirm();
 const toast = useToast(); // เพิ่มบรรทัดนี้
 
 // --- ตัวเลือกเกรด ---
-const gradeOptions = ref(['A', 'B+', 'B', 'C+', 'C', 'D+', 'D']);
+const gradeOptions = ref(['A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F']);
 
 const limitInputLength = (event: KeyboardEvent, maxLength: number) => {
     const target = event.target as HTMLInputElement;
@@ -200,6 +294,30 @@ const calculateSemesterCredits = (courses: CourseDisplayData[]): number => {
         }
     });
     return total;
+};
+
+const calculateSemesterTotalPoints = (courses: CourseDisplayData[]): number => {
+    let totalPoints = 0;
+    const gradeValues: { [key: string]: number } = {
+        A: 4.0,
+        'B+': 3.5,
+        B: 3.0,
+        'C+': 2.5,
+        C: 2.0,
+        'D+': 1.5,
+        D: 1.0,
+        F: 0
+    };
+
+    courses.forEach((course) => {
+        // คำนวณแต้มรวมเฉพาะเกรดที่มีค่า (A-F)
+        if (course.grade && gradeValues.hasOwnProperty(course.grade)) {
+            // แต้มคะแนน = ค่าเกรด * หน่วยกิต
+            totalPoints += gradeValues[course.grade] * course.credit;
+        }
+    });
+    // คืนค่าแต้มคะแนนรวม
+    return totalPoints;
 };
 
 // คำนวณ GPAX
@@ -971,6 +1089,7 @@ onMounted(async () => {
 
     <div v-if="isLoading" class="loading">กำลังโหลดข้อมูล...</div>
     <div v-else-if="errorMessage && !showSaveAllConfirmDialog" class="error-message">{{ errorMessage }}</div>
+
     <div v-else>
         <div class="card summary-card">
             <div class="gpa-summary">
@@ -1012,13 +1131,14 @@ onMounted(async () => {
                 </DataTable>
                 <div class="semester-summary">
                     <div>จำนวนหน่วยกิตภาคการศึกษานี้: {{ calculateSemesterCredits(semesterData.courses) }}</div>
+                    <div class="summary-total-points">จำนวนแต้มคะแนนภาคการศึกษานี้: {{ calculateSemesterTotalPoints(semesterData.courses).toFixed(1) }}</div>
                     <div>เกรดเฉลี่ยภาคการศึกษานี้: {{ calculateSemesterGPA(semesterData.courses).toFixed(2) }}</div>
                 </div>
             </Fieldset>
         </div>
 
         <div class="card">
-            <Fieldset legend="วิชาอื่นๆ" :toggleable="true">
+            <Fieldset legend="วิชาอื่นๆ หรือรายวิชาที่ยังไม่ผ่าน (F)" :toggleable="true">
                 <DataTable :value="otherCourses" tableStyle="min-width: 50rem" dataKey="tempId" :rowClass="getRowClass">
                     <Column field="courseCode" header="รหัสวิชา" style="width: 15%">
                         <template #body="slotProps">
@@ -1065,9 +1185,14 @@ onMounted(async () => {
                 </DataTable>
                 <div class="semester-summary">
                     <div>จำนวนหน่วยกิตวิชาอื่นๆ: {{ calculateSemesterCredits(otherCourses) }}</div>
+                    <div class="summary-total-pointsOther">จำนวนแต้มคะแนนวิชาอื่นๆ: {{ calculateSemesterTotalPoints(otherCourses).toFixed(1) }}</div>
                     <div>เกรดเฉลี่ยวิชาอื่นๆ: {{ calculateSemesterGPA(otherCourses).toFixed(2) }}</div>
                 </div>
-                <Button label="เพิ่มวิชาใหม่" icon="pi pi-plus" @click="addNewOtherCourse" class="mt-3" :disabled="isSaving" />
+
+                <div class="flex justify-content-end mt-3 gap-2">
+                    <Button label="เพิ่มรายวิชา" icon="pi pi-plus" class="p-button-primary" @click="openAddDialog" :loading="isSaving" :disabled="isSaving" />
+                    <Button label="เพิ่มเกรดรายวิชาอื่นๆ" icon="pi pi-plus" @click="addNewOtherCourse" :disabled="isSaving" />
+                </div>
             </Fieldset>
         </div>
     </div>
@@ -1113,6 +1238,37 @@ onMounted(async () => {
         <template #footer>
             <Button label="ยกเลิก" icon="pi pi-times" @click="cancelSaveAction" class="p-button p-button-danger" />
             <Button label="บันทึก" icon="pi pi-check" @click="confirmAndSaveAll" class="p-button-success" :loading="isSaving" :disabled="isSaving || coursesForCustomConfirm.length === 0" autofocus />
+        </template>
+    </Dialog>
+
+    <Dialog v-model:visible="isAddDialogVisible" header="เพิ่มรายวิชาใหม่" :modal="true" :style="{ width: '450px' }">
+        <div class="form-container p-fluid">
+            <p class="dialog-hint-text">สำหรับผู้ยังไม่ผ่านบางรายวิชา (F)<br />(ให้ใส่นำหน้าด้วย F030 ตามด้วยรหัสวิชา 4 ตัวหลังของวิชานั้น)</p>
+            <div class="field">
+                <label for="courseCode">รหัสวิชา</label>
+                <InputText id="courseCode" v-model.trim="newCourse.courseCode" required autofocus :disabled="isSaving" maxlength="8" />
+            </div>
+            <div class="field">
+                <label for="courseNameTH">ชื่อวิชา (ไทย)</label>
+                <InputText id="courseNameTH" v-model.trim="newCourse.courseNameTH" required :disabled="isSaving" />
+            </div>
+            <div class="field">
+                <label for="courseNameEN">ชื่อวิชา (อังกฤษ)</label>
+                <InputText id="courseNameEN" v-model.trim="newCourse.courseNameEN" required :disabled="isSaving" />
+            </div>
+            <div class="field">
+                <label for="credit">หน่วยกิต</label>
+                <InputNumber id="credit" v-model="newCourse.credit" mode="decimal" :min="1" :max="9" required :disabled="isSaving" :maxlength="1" @keydown="limitInputLength($event, 1)" />
+            </div>
+            <div class="field">
+                <label for="subjectGroup">กลุ่มวิชา</label>
+                <InputText id="subjectGroup" v-model.trim="newCourse.subjectGroup" required :disabled="isSaving" />
+            </div>
+        </div>
+
+        <template #footer>
+            <Button label="ยกเลิก" icon="pi pi-times" class="p-button-danger" @click="closeAddDialog" :disabled="isSaving" />
+            <Button label="บันทึก" icon="pi pi-check" @click="saveNewCourse" :disabled="!isFormValid || isSaving" :loading="isSaving" />
         </template>
     </Dialog>
 </template>
@@ -1165,6 +1321,14 @@ onMounted(async () => {
     border-radius: 4px;
 }
 
+.summary-total-points {
+    margin-right: 57rem; /* เปลี่ยนสีข้อความ (ตัวอย่าง: สีน้ำเงินเข้ม) */
+}
+
+.summary-total-pointsOther {
+    margin-right: 59rem; /* เปลี่ยนสีข้อความ (ตัวอย่าง: สีน้ำเงินเข้ม) */
+}
+
 .modified-row {
     background-color: #fff9db !important;
 }
@@ -1190,5 +1354,39 @@ onMounted(async () => {
 }
 .p-confirmdialog .p-confirm-dialog-message {
     white-space: pre-line;
+}
+.form-container .field {
+    margin-bottom: 1.2rem; /* ระยะห่างระหว่างแต่ละช่องกรอก */
+}
+
+.form-container .field label {
+    display: block; /* ทำให้ label แสดงผลอยู่บรรทัดบน */
+    margin-bottom: 0.5rem; /* ระยะห่างระหว่าง label กับ input */
+    font-weight: 600; /* ความหนาของตัวอักษร label (ปรับได้) */
+    font-size: 0.9rem; /* ขนาดตัวอักษร label (ปรับได้) */
+    color: var(--text-color); /* สีตัวอักษร */
+}
+
+/* ทำให้ InputText และ InputNumber กว้างเต็มพื้นที่ ถ้าใช้ class p-fluid */
+.form-container.p-fluid .p-inputtext,
+.form-container.p-fluid .p-inputnumber {
+    width: 100%;
+}
+
+.dialog-hint-text {
+    color: #888888; /* สีเทาจาง */
+    font-size: 1rem; /* ขนาดตัวอักษรเล็กน้อย */
+    margin-bottom: 1.2rem; /* ระยะห่างเท่ากับ .field */
+    line-height: 1.4; /* ปรับระยะห่างบรรทัดให้อ่านง่าย */
+}
+
+:deep(.p-dialog .p-dialog-footer .p-button) {
+    margin: 0 0.25rem; /* ปรับระยะห่างระหว่างปุ่มใน footer */
+}
+
+/* จัดลำดับปุ่มใน footer (ถ้าต้องการให้ Save อยู่ขวา) */
+:deep(.p-dialog .p-dialog-footer) {
+    display: flex;
+    justify-content: flex-end; /* ดันปุ่มไปทางขวา */
 }
 </style>

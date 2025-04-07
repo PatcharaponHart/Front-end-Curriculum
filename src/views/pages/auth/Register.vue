@@ -9,7 +9,6 @@
                 <!-- เพิ่มขนาดตัวหนังสือ -->
             </div>
 
-            <!-- ชื่อผู้ใช้ -->
             <div class="mb-6">
                 <label for="username" class="block text-base font-medium text-gray-700">ชื่อผู้ใช้</label>
                 <!-- เพิ่มขนาดตัวหนังสือ -->
@@ -17,12 +16,16 @@
                 <!-- ปรับขนาดตัวหนังสือใน input -->
             </div>
 
-            <!-- รหัสผ่าน -->
             <div class="mb-6">
                 <label for="studentID" class="block text-base font-medium text-gray-700">รหัสนิสิต</label>
-                <!-- เพิ่มขนาดตัวหนังสือ -->
-                <input v-model="studentID" id="studentID" type="text" placeholder="กรอกรหัสนิสิตของคุณ" class="w-full px-4 py-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg" />
-                <!-- ปรับขนาดตัวหนังสือใน input -->
+                <input
+                    v-model="studentID"
+                    id="studentID"
+                    type="text"
+                    placeholder="กรอกรหัสนิสิตของคุณ"
+                    class="w-full px-4 py-3 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg"
+                    maxlength="10"
+                />
             </div>
 
             <div class="mb-6">
@@ -87,7 +90,6 @@ import Toast from 'primevue/toast'; // Import component สำหรับ templ
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast'; // Import useToast
 import { ref } from 'vue';
-import router from '../../../router';
 import studentService from '../../../service/studentService';
 
 // ... ภายใน script setup
@@ -111,24 +113,35 @@ const sectionOptions = ref([
 ]);
 
 const onRegister = async () => {
+    // 1. ตรวจสอบว่ากรอกข้อมูลครบทุกช่องหรือไม่
     if (!username.value || !studentID.value || !section.value || !firstName.value || !lastName.value || !password.value || !confirmPassword.value) {
-        toast.add({ severity: 'warn', summary: 'ข้อมูลไม่ครบ', detail: 'กรุณากรอกข้อมูลให้ครบ', life: 3000 });
-        return;
+        toast.add({ severity: 'warn', summary: 'ข้อมูลไม่ครบ', detail: 'กรุณากรอกข้อมูลให้ครบทุกช่อง', life: 3000 });
+        return; // หยุดฟังก์ชันถ้าข้อมูลไม่ครบ
     }
 
+    // --- START: เพิ่มการตรวจสอบความยาวรหัสนิสิต ---
+    // 2. ตรวจสอบว่ารหัสนิสิตมี 10 หลักหรือไม่
+    if (studentID.value.length !== 10) {
+        toast.add({ severity: 'warn', summary: 'รหัสนิสิตไม่ถูกต้อง', detail: 'รหัสนิสิตต้องมีจำนวน 10 หลัก', life: 3000 });
+        return; // หยุดฟังก์ชันถ้ารหัสไม่ครบ 10 หลัก
+    }
+    // --- END: เพิ่มการตรวจสอบความยาวรหัสนิสิต ---
+
+    // 3. ตรวจสอบว่ารหัสผ่านตรงกันหรือไม่
     if (password.value !== confirmPassword.value) {
         toast.add({ severity: 'warn', summary: 'รหัสผ่านไม่ตรงกัน', detail: 'กรุณากรอกรหัสผ่านและยืนยันรหัสผ่านให้ตรงกัน', life: 3000 });
-        return;
+        return; // หยุดฟังก์ชันถ้ารหัสผ่านไม่ตรงกัน
     }
 
+    // 4. แสดง Dialog ยืนยัน (ถ้าทุกอย่างถูกต้อง)
     confirm.require({
-        message: 'ตรวจสอบข้อมูลถูกต้องแล้วใช่มั้ย?', // ข้อความคำถาม
-        header: 'ยืนยันการลงทะเบียน', // หัวข้อ Popup
-        icon: 'pi pi-question-circle', // ไอคอน (เลือกได้)
-        acceptLabel: 'ยืนยัน', // ข้อความปุ่มยืนยัน
-        rejectLabel: 'ยกเลิก', // ข้อความปุ่มยกเลิก
-        acceptClass: 'p-button-success', // (Optional) Class สำหรับปุ่ม Accept
-        rejectClass: 'p-button p-button-danger', // (Optional) Class สำหรับปุ่ม Reject
+        message: 'ตรวจสอบข้อมูลถูกต้องแล้วใช่มั้ย?',
+        header: 'ยืนยันการลงทะเบียน',
+        icon: 'pi pi-question-circle',
+        acceptLabel: 'ยืนยัน',
+        rejectLabel: 'ยกเลิก',
+        acceptClass: 'p-button-success',
+        rejectClass: 'p-button p-button-danger',
         accept: async () => {
             loading.value = true;
             try {
@@ -143,7 +156,6 @@ const onRegister = async () => {
 
                 await studentService.registerStudent(registrationData);
 
-                // แสดง toast บนหน้าปัจจุบัน
                 toast.add({
                     severity: 'success',
                     summary: 'ลงทะเบียนสำเร็จ',
@@ -151,16 +163,12 @@ const onRegister = async () => {
                     life: 2000
                 });
 
-                // บันทึกข้อมูลใน sessionStorage
                 sessionStorage.setItem('showLoginSuccessToast', 'true');
                 console.log('Session storage set');
 
                 await new Promise<void>((resolve) => {
                     setTimeout(() => {
-                        // ลองใช้การนำทางแบบจำเป็น (forced navigation)
-                        window.location.href = '/auth/login'; // แทนที่ด้วย URL จริงของหน้า login
-                        // หรือยังคงใช้ router แต่เพิ่ม flag replace
-                        // router.push({ name: 'login', replace: true });
+                        window.location.href = '/auth/login'; // Redirect
                         resolve();
                     }, 2000);
                 });
@@ -169,20 +177,15 @@ const onRegister = async () => {
                 let detailMessage = 'ไม่สามารถลงทะเบียนได้ โปรดลองอีกครั้ง';
 
                 if (axios.isAxiosError(error) && error.response) {
-                    // --- เพิ่มการตรวจสอบ Status Code ---
                     if (error.response.status === 409 || error.response.status === 400) {
-                        // ตรวจสอบ 409 Conflict หรือ 400 Bad Request
                         if (error.response.data && error.response.data.message) {
-                            detailMessage = error.response.data.message; // <-- ใช้ message จาก backend
+                            detailMessage = error.response.data.message;
                         } else if (typeof error.response.data === 'string') {
-                            detailMessage = error.response.data; // <-- ใช้ message จาก backend (ถ้าส่งมาเป็น string)
+                            detailMessage = error.response.data;
                         } else {
-                            detailMessage = `ข้อมูลซ้ำ หรือไม่ถูกต้อง (${error.response.status})`; // ข้อความ fallback
+                            detailMessage = `ข้อมูลซ้ำ หรือไม่ถูกต้อง (${error.response.status})`;
                         }
-                    }
-                    // --- สิ้นสุดการตรวจสอบ Status Code ---
-                    else {
-                        // จัดการ Error อื่นๆ (เช่น 500 Internal Server Error)
+                    } else {
                         detailMessage = `เกิดข้อผิดพลาด: ${error.response.status} ${error.response.statusText}`;
                     }
                 } else if (error.message) {
@@ -195,7 +198,7 @@ const onRegister = async () => {
             }
         },
         reject: () => {
-            // (Optional) โค้ดที่ต้องการให้ทำงานเมื่อผู้ใช้กด "ยกเลิก"
+            // Optional: Action on rejection
             // toast.add({ severity: 'info', summary: 'ยกเลิก', detail: 'การลงทะเบียนถูกยกเลิก', life: 3000 });
         }
     });
