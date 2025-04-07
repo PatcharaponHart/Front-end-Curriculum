@@ -5,7 +5,7 @@ export interface Course {
   courseCode: string;
   courseNameTH: string;
   courseNameEN: string;
-  credit: string;
+  credit: number;
   subjectGroup: string;
 }
 
